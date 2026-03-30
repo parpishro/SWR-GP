@@ -1,0 +1,42 @@
+---
+title: "Multi-Scale Residual Covariance"
+subtitle: "Experiment exp_multiscale_residual_covariance"
+format:
+  pdf:
+    documentclass: article
+    geometry: margin=1in
+    fontsize: 11pt
+---
+
+## Overview
+
+Compares single-scale vs multi-scale Matérn NNGP residual covariance on Big Sur daily streamflow.
+The multi-scale variant uses two sequential Matérn scales (short + long) in a stacked NNGP whitening objective.
+
+**Config:** K=4, m=20, ν=1.5, maxiter=202, seed=42, Gaussian kernels.
+
+## Test Performance
+
+| Model | sim CRPS | sim NSE | sim RMSE | krig CRPS | krig NSE | krig RMSE |
+|---|---|---|---|---|---|---|
+| Single-scale (SWR-GP) | 0.644 | 0.660 | 2.463 | 0.394 | 0.823 | 1.776 |
+| Multi-scale | 0.831 | 0.424 | — | 0.533 | 0.774 | — |
+
+**Improvement (multi-scale − single-scale):**
+
+| Metric | Delta |
+|---|---|
+| sim CRPS | +0.187 (worse) |
+| krig CRPS | +0.139 (worse) |
+| sim NSE | −0.236 (worse) |
+| krig NSE | −0.049 (worse) |
+
+## Conclusion
+
+Multi-scale residual covariance does not improve performance on this dataset.
+The added flexibility in residual structure degrades both simulation and kriging metrics,
+suggesting the single-scale Matérn is already a good fit for the temporal dependence here.
+
+## Notes
+
+Best single-scale parameters: θ = (σ²=0.413, φ=12.510, ν=1.5, τ²=0.012).

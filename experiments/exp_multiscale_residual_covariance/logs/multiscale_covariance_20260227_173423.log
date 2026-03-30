@@ -1,0 +1,14 @@
+2026-02-27 17:34:23 | INFO     | ========================================================================
+2026-02-27 17:34:23 | INFO     | MULTI-SCALE RESIDUAL COVARIANCE EXPERIMENT
+2026-02-27 17:34:23 | INFO     | ========================================================================
+2026-02-27 17:34:23 | INFO     | Started: 2026-02-27 17:34:23.804473
+2026-02-27 17:34:23 | INFO     | K=3, m=10, nu=1.5, maxiter=120, seed=42, test_mode=False
+2026-02-27 17:34:23 | INFO     | Train size=10501, Test size=3652
+2026-02-27 17:40:04 | INFO     | 
+Single-scale (test): NSE(sim)=0.6432, NSE(krig)=0.8198, CRPS(sim)=0.6521, CRPS(krig)=0.4060
+2026-02-27 17:40:04 | INFO     | Multi-scale  (test): NSE(sim)=0.3272, NSE(krig)=0.7660, CRPS(sim)=0.9319, CRPS(krig)=0.6017
+2026-02-27 17:40:04 | INFO     | Deltas (multi - single): NSE(sim)=-0.3160, NSE(krig)=-0.0538, CRPS(sim)=0.2798, CRPS(krig)=0.1957
+2026-02-27 17:40:04 | INFO     | Results saved: /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_multiscale_residual_covariance/metrics/multiscale_covariance_results.json
+2026-02-27 17:40:04 | INFO     | Archived results: /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_multiscale_residual_covariance/metrics/multiscale_covariance_results_20260227_173423.json
+2026-02-27 17:40:04 | INFO     | Comparison plot: /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_multiscale_residual_covariance/plots/multiscale_covariance_comparison_K3_20260227_173423.png
+2026-02-27 17:40:04 | INFO     | Log: /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_multiscale_residual_covariance/logs/multiscale_covariance_20260227_173423.log
