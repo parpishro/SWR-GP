@@ -1,0 +1,334 @@
+---
+title: "Gaussian Process Kernel Regression for Hydrological Modeling"
+subtitle: "STAT 548 Qualifying Course Project"
+author: "Par Pishrobat"
+date: "February 2026"
+output:
+  beamer_presentation:
+    theme: "Frankfurt"
+    slide_level: 2
+    toc: false
+    latex_engine: pdflatex
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{tikz}
+  - \usepackage{lmodern}
+  - \usepackage[scaled=0.92]{helvet}
+  - \renewcommand{\familydefault}{\sfdefault}
+  - \usepackage[T1]{fontenc}
+  - \usepackage{amsmath,amssymb}
+  - \usefonttheme{professionalfonts}
+  - \usepackage{graphicx}
+  - \usepackage{tabularx}
+  # --- Subtle color palette ---
+  - \definecolor{Charcoal}{RGB}{55, 58, 64}
+  - \definecolor{SlateGray}{RGB}{100, 105, 114}
+  - \definecolor{LightSlate}{RGB}{235, 237, 240}
+  - \definecolor{TextBody}{RGB}{60, 63, 68}
+  - \definecolor{Accent}{RGB}{70, 120, 160}
+  # --- Structure colors ---
+  - \setbeamercolor{structure}{fg=Charcoal}
+  - \setbeamercolor{palette primary}{fg=white, bg=Charcoal}
+  - \setbeamercolor{palette secondary}{fg=white, bg=SlateGray}
+  - \setbeamercolor{palette tertiary}{fg=white, bg=Charcoal}
+  - \setbeamercolor{section in head/foot}{fg=white, bg=Charcoal}
+  - \setbeamercolor{subsection in head/foot}{fg=white, bg=SlateGray}
+  - \setbeamercolor{mini frame}{fg=white, bg=SlateGray}
+  - \setbeamercolor{normal text}{fg=TextBody}
+  - \setbeamercolor{frametitle}{fg=Charcoal, bg=white}
+  # --- Blocks: flat, no shadow ---
+  - \setbeamercolor{block title}{bg=Charcoal, fg=white}
+  - \setbeamercolor{block body}{bg=LightSlate, fg=TextBody}
+  - \setbeamercolor{block title alerted}{bg=Charcoal!70!red, fg=white}
+  - \setbeamercolor{block body alerted}{bg=red!5, fg=TextBody}
+  - \setbeamercolor{block title example}{bg=SlateGray, fg=white}
+  - \setbeamercolor{block body example}{bg=LightSlate, fg=TextBody}
+  # --- Fonts: restrained ---
+  - \setbeamerfont{title}{series=\bfseries, size=\Large}
+  - \setbeamerfont{subtitle}{size=\normalsize}
+  - \setbeamerfont{frametitle}{series=\bfseries, size=\normalsize}
+  - \setbeamerfont{block title}{series=\bfseries, size=\small}
+  - \setbeamerfont{section in head/foot}{size=\fontsize{5}{6}\selectfont}
+  - \setbeamerfont{subsection in head/foot}{size=\fontsize{4}{5}\selectfont}
+  # --- Template: clean and flat ---
+  - \setbeamertemplate{blocks}[rounded][shadow=false]
+  - \setbeamertemplate{footline}[frame number]
+  - \setbeamertemplate{navigation symbols}{}
+  - \setbeamertemplate{itemize items}[circle]
+  - \setbeamercolor{itemize item}{fg=SlateGray}
+  - \setbeamercolor{itemize subitem}{fg=SlateGray!70}
+  - \setbeamercolor{enumerate item}{fg=Charcoal}
+  - \setbeamercolor{section in toc}{fg=Charcoal}
+  # --- Spacing ---
+  - \setlength{\parskip}{0.3em}
+  - \linespread{1.05}
+  - \AtBeginSection[]{}
+  # --- Margins for content overflow ---
+  - \setbeamersize{text margin left=6mm, text margin right=6mm}
+  # --- Global small body text ---
+  - \AtBeginDocument{\small}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Contents {.unnumbered}
+
+\tableofcontents
+
+# NN-GLS
+
+## Zhan \& Datta (2024): NN-GLS
+
+NN-GLS embeds Neural Networks within a Gaussian Process to handle dependent data:
+
+$$ Y(\mathbf{s}) = f_{\text{NN}}(\mathbf{X}(\mathbf{s})) + \epsilon(\mathbf{s}), \quad \boldsymbol{\epsilon} \sim \text{GP}(0, \Sigma) $$
+
+\begin{block}{GLS Loss}
+$\mathcal{L}_{\text{GLS}} = (\mathbf{Y} - \mathbf{f})^\top \boldsymbol{\Sigma}^{-1} (\mathbf{Y} - \mathbf{f})$
+\end{block}
+
+- **Problem**: OLS assumes independence, yielding inefficient estimates for correlated data.
+- **NNGP Scaling**: Approximates $\Sigma^{-1}$ via a sparse DAG, reducing $O(n^3)$ to $O(nm^3)$.
+- **GNN View**: GLS = OLS on decorrelated data via graph convolution:
+  $$ Y_i^* = F_{i}^{-1/2}\!\left(Y_i - \textstyle\sum_{j \in N(i)} B_{ij}\, Y_j\right) $$
+
+## Key Theoretical Results
+
+\begin{exampleblock}{From the Paper}
+\begin{enumerate}
+\item \textbf{Consistency}: $\|\hat{f}_n - f_0\|_n \xrightarrow{p} 0$ --- first such result for NNs on spatial data.
+\item \textbf{GLS Protection}: The precision matrix protects the mean estimator from absorbing unobserved spatial/temporal factors.
+\item \textbf{Kriging}: Predictions combine the NN estimate with a correction from correlated residuals:
+$$\hat{Y}(s_0) = \hat{f}(\mathbf{X}_0) + \sum_{j \in N(s_0)} \tilde{B}_{0j}(Y_j - \hat{f}(\mathbf{X}_j))$$
+\end{enumerate}
+\end{exampleblock}
+
+- Valid confidence intervals via spatial bootstrap on decorrelated residuals.
+- Software: `geospaNN` Python package (PyTorch + PyG).
+
+# Hydrology
+
+## Rainfall--Runoff Modeling
+
+The relationship between **Precipitation** ($R_t$) and **Streamflow** ($Y_t$) involves:
+
+- **Lagged Processes**: Rainfall at $t\!-\!s$ contributes to runoff at $t$ through surface, soil, and groundwater pathways, each with different timescales.
+- **Persistence**: Catchment storage creates strong residual autocorrelation.
+
+\begin{block}{Current Approach: SWR with AR Terms}
+AR terms handle autocorrelation in the mean:
+$$\mu_t = \tilde{y}_t + \sum_{j=1}^{p} \phi_j(y_{t-j} - \tilde{y}_{t-j})$$
+\end{block}
+
+The AR term ($y_{t-1}$) provides a powerful short-term predictor, but at a cost.
+
+## The Identifiability Crisis
+
+\begin{alertblock}{Core Problem}
+The AR coefficient $\phi$ absorbs the fast-response variance that should belong to the \textbf{physical kernels}.
+\end{alertblock}
+
+- **Identifiability**: Kernel parameters $(\delta, \sigma)$ become unstable when competing with AR terms for the same signal.
+- **Consequence**: Kernel weights $\beta$ and shapes lose their physical interpretation as hydrological pathways.
+
+\begin{block}{Proposed Solution}
+Relegate temporal memory to the \textbf{covariance structure} $\Sigma$, separating:
+\begin{itemize}
+\item Physical process identification $\rightarrow$ kernel mean function
+\item Temporal dependence $\rightarrow$ GP covariance
+\end{itemize}
+\end{block}
+
+# GP-SWR
+
+## GP-SWR: From Spatial to Temporal
+
+We propose **GP-SWR**: replacing the AR mean with a GP covariance structure.
+
+$$ y_t = \tilde{y}_t + \epsilon_t, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(0, \Sigma(\boldsymbol{\theta})) $$
+
+\begin{block}{Temporal NNGP Adaptation}
+\begin{itemize}
+\item \textbf{Neighbors}: $N(t) = \{t\!-\!1, \ldots, t\!-\!m\}$ (the $m$ most recent past days)
+\item \textbf{Causality}: DAG ordering follows time naturally
+\item \textbf{Decorrelation}: $y_t^* = F_t^{-1/2}(y_t - \sum_{j \in N(t)} B_{tj}\, y_j)$
+\item \textbf{Efficiency}: $O(nm^3)$ build, $O(nm)$ decorrelation
+\end{itemize}
+\end{block}
+
+For $n \approx 10{,}000$, $m = 50$: NNGP matrices can be built efficiently in seconds.
+
+## Interpretable Kernel Mean Function
+
+::: columns
+
+:::: {.column width="55%"}
+Rainfall is convolved with $K$ **Gamma kernels** to create lagged predictors:
+
+$$ \kappa_s(\delta, \sigma) = \frac{1}{\sigma^\delta \Gamma(\delta)} s^{\delta-1} e^{-s/\sigma} $$
+
+- Discretized via CDF: $\kappa_s = F(s\!+\!1) - F(s)$
+- Mass conservation: $\sum_s \kappa_s = 1$
+- Mean lag = $\delta\sigma$, Spread = $\sqrt{\delta}\,\sigma$
+
+The kernel predictor is linear in data given shapes:
+$$\tilde{y}_t = \sum_{i=1}^{K} \beta^{(i)} X_t^{(i)}, \; X_t^{(i)} = \sum_{s=0}^{L} \kappa_s^{(i)} R_{t-s}$$
+::::
+
+:::: {.column width="45%"}
+![Flow Components](images/kernel_concept.png)
+::::
+
+:::
+
+## The Full GP-SWR Model
+
+\begin{block}{Observation Model}
+\vspace{-0.3em}
+$$y_t = \sum_{i=1}^{K} \beta^{(i)} X_t^{(i)} + \epsilon_t, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(0, \Sigma(\boldsymbol{\theta}))$$
+\vspace{-0.3em}
+\end{block}
+
+\textbf{Mat\'ern covariance} with nugget: $\Sigma_{t,t'} = \sigma^2 M_\nu\!\left(\frac{|t-t'|}{\phi}\right) + \tau^2 \mathbf{1}_{t=t'}$
+
+\vspace{0.2em}
+\footnotesize
+\begin{tabular}{@{}lcl@{}}
+\toprule
+Parameter & Symbol & Hydrological Meaning \\
+\midrule
+Partial sill & $\sigma^2$ & Variance of slow persistent processes \\
+Range & $\phi$ & Recession timescale (days) \\
+Smoothness & $\nu$ & Differentiability of residuals \\
+Nugget & $\tau^2$ & Observation noise + fast dynamics \\
+\bottomrule
+\end{tabular}
+\normalsize
+\vspace{0.2em}
+
+Given shapes $(\delta^{(i)}, \sigma^{(i)})$, GLS for weights is closed-form:
+$\hat{\boldsymbol{\beta}} = (\mathbf{X}^\top \mathbf{Q}\, \mathbf{X})^{-1} \mathbf{X}^\top \mathbf{Q}\, \mathbf{y}$
+
+# Training
+
+## Iterative Profile Likelihood
+
+\begin{exampleblock}{Six-Stage Estimation}
+\begin{enumerate}
+\item \textbf{Pilot OLS}: Fit initial kernels ignoring autocorrelation $\rightarrow$ working residuals.
+\item \textbf{Covariance Fit}: Estimate Mat\'ern $(\sigma^2, \phi, \nu, \tau^2)$ from residual ACF.
+\item \textbf{NNGP Build}: Construct sparse precision $\mathbf{Q} \approx \Sigma^{-1}$ from $m$ temporal neighbors.
+\item \textbf{Closed-Form GLS}: $\hat{\boldsymbol{\beta}} = (\mathbf{X}^\top \mathbf{Q}\, \mathbf{X})^{-1}\mathbf{X}^\top \mathbf{Q}\,\mathbf{y}$.
+\item \textbf{Profile Optimization}: Refine kernel shapes via CMA-ES.
+\item \textbf{Iterate}: Repeat stages 2--5 until parameters stabilize.
+\end{enumerate}
+\end{exampleblock}
+
+## Computational Details
+
+- **CMA-ES** (Covariance Matrix Adaptation): Global optimizer for the non-convex kernel shape parameters, avoids local minima.
+- **Profile Likelihood**: For each candidate $(\delta, \sigma)$, $\hat{\boldsymbol{\beta}}$ is computed in closed form --- reduces optimization to $2K$ dimensions.
+- **Model Selection**: We will fit $K = 1, 2, 3, \ldots$ and select via AIC:
+$$ \text{AIC} = -2\,\ell(\hat{\boldsymbol{\theta}}) + 2p $$
+- **Scalability**: The NNGP approximation and closed-form GLS make the algorithm tractable for decade-scale daily datasets.
+
+# Experiments
+
+## Big Sur Catchment Data
+
+**Dataset**: 14,154 daily observations (1980--2018), Big Sur River, California.
+
+\vspace{0.3em}
+\footnotesize
+\begin{tabular}{@{}llc@{}}
+\toprule
+Variable & Description & Units \\
+\midrule
+Streamflow & Discharge at catchment outlet & m$^3$/s \\
+Rainfall & Daily precipitation & mm/day \\
+Temperature & Mean daily temperature & $^\circ$C \\
+\bottomrule
+\end{tabular}
+\normalsize
+
+\begin{block}{Experimental Setup}
+\begin{itemize}
+\item \textbf{Training}: $\sim$10,500 observations (hydrological years $<$ 30)
+\item \textbf{Test}: $\sim$3,650 observations (hydrological years $\geq$ 30)
+\item \textbf{NNGP neighbors}: $m = 50$ (to capture baseflow recession)
+\item \textbf{Smoothness}: $\nu = 1.5$ (Mat\'ern-3/2)
+\end{itemize}
+\end{block}
+
+## Planned Model Selection
+
+We will fit GP-SWR with $K = 1, 2, 3$ kernels and select the best model via AIC.
+
+\begin{block}{Evaluation Metrics}
+\begin{itemize}
+\item \textbf{NSE}: Predictive skill relative to the mean; NSE $= 1$ is perfect.
+\item \textbf{KGE}: Jointly evaluates correlation, bias, and variability.
+\item \textbf{RMSE / MAE}: Standard error metrics on the test set.
+\end{itemize}
+\end{block}
+
+**Expected outcomes**:
+
+- Increasing $K$ should improve AIC by capturing distinct hydrological pathways.
+- Recovered kernel shapes should correspond to known catchment response times (surface runoff, subsurface drainage, baseflow).
+
+## Neural Network Benchmark
+
+We plan to compare GP-SWR against a **GP-NN** benchmark:
+
+- Replace the interpretable kernel mean with a multilayer perceptron (MLP).
+- Keep the same NNGP covariance structure and GLS training.
+- This isolates the effect of interpretable kernels vs.\ flexible NN on predictive performance.
+
+\begin{block}{Key Questions}
+\begin{itemize}
+\item Does the NN benchmark outperform the kernel model in raw accuracy?
+\item If so, is the loss of physical interpretability justified?
+\item Does the GP covariance help the NN as much as the kernels?
+\end{itemize}
+\end{block}
+
+## Diagnostics and Validation
+
+Additional planned analyses:
+
+\begin{itemize}
+\item \textbf{Residual ACF}: Verify that residuals are approximately white noise.
+\item \textbf{Prediction intervals}: Assess coverage of 90\% and 95\% intervals on the test set.
+\item \textbf{Kriging}: Compare kriging predictions against direct plug-in predictions.
+\item \textbf{Convergence}: Check that kernel parameters stabilize across iterations.
+\end{itemize}
+
+# Conclusion
+
+## Hypotheses
+
+\begin{exampleblock}{What We Expect to Find}
+\begin{enumerate}
+\item \textbf{AIC will select $K \geq 2$}: Multiple kernels should capture distinct hydrological pathways (surface runoff, interflow, baseflow).
+\item \textbf{Improved performance}: Separating physical processes from temporal dependence should yield higher NSE and KGE than a single-kernel model.
+\item \textbf{Interpretable kernels}: Recovered lag parameters should match known catchment response times.
+\item \textbf{Clean residuals}: The Mat\'ern GP covariance should absorb autocorrelation, leaving approximately white-noise residuals.
+\end{enumerate}
+\end{exampleblock}
+
+## Expected Contributions
+
+- **Methodological**: A unified framework separating physical response identification (kernels) from temporal dependence (GP covariance), resolving the AR--kernel identifiability crisis.
+- **Computational**: Adaptation of NNGP from spatial $k$-nearest neighbors to temporal $m$-recent-past, enabling efficient decorrelation on decade-scale daily data.
+- **Applied**: Rigorous model selection ($K = 1, 2, 3$) on long-record daily streamflow data, testing whether process-based kernels outperform simpler alternatives when freed from AR interference.
+
+## Next Steps
+
+**Open Questions**:
+
+1. Will the GP covariance fully resolve identifiability, or might a slow kernel still confound with seasonality?
+2. How will GP-SWR compare to the GP-NN benchmark in terms of predictive power vs.\ interpretability?
+3. Should we extend to multi-catchment validation or focus on deeper diagnostics for a single site?
