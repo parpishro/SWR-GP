@@ -1,0 +1,819 @@
+Using rainfall series of length n=3,652 (Big Sur training split)
+Fitting only the oracle model at each true K
+
+======================================================================
+  Grid cell 1/12: K_true=1, noise_tier=low (SNR=100.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 45.1s (6000 evals)
+Log-lik: 4975.06, AIC: -9938.11, AIC_eff: -9109.03, BIC_eff: -9926.39
+Warm-up period: 66 days
+    restart 1/3: logLik=1598.487  iters=200  seed=89250954
+    restart 2/3: logLik=4975.057  iters=200  seed=89250955
+    restart 3/3: logLik=4540.652  iters=200  seed=89250956
+    rep 1/5: NRMSE=0.001  NSE=0.990 (max=0.990)  BIC=-9900.896  logLik=4975.057  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0024 | sigma_k MSE=0.0000 MAE=0.0003 | beta MSE=0.0000 MAE=0.0002
+      covariance: sigma_sq MSE=0.0013 MAE=0.0365 | phi MSE=13750.7918 MAE=117.2638 | tau_sq MSE=0.0000 MAE=0.0053
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 43.7s (6000 evals)
+Log-lik: 4327.47, AIC: -8642.93, AIC_eff: -8245.44, BIC_eff: -8626.90
+Warm-up period: 81 days
+    restart 1/3: logLik=4327.467  iters=200  seed=773956048
+    restart 2/3: logLik=3496.711  iters=200  seed=773956049
+    restart 3/3: logLik=3541.742  iters=200  seed=773956050
+    rep 2/5: NRMSE=0.156  NSE=0.964 (max=0.990)  BIC=-8605.717  logLik=4327.467  lag_err=0.005
+      kernel params: delta MSE=0.1148 MAE=0.3388 | sigma_k MSE=0.0700 MAE=0.2645 | beta MSE=0.0003 MAE=0.0182
+      covariance: sigma_sq MSE=0.0102 MAE=0.1011 | phi MSE=2.7966 MAE=1.6723 | tau_sq MSE=0.0000 MAE=0.0064
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 44.3s (6000 evals)
+Log-lik: 5205.03, AIC: -10398.05, AIC_eff: -9677.67, BIC_eff: -10385.50
+Warm-up period: 38 days
+    restart 1/3: logLik=5205.026  iters=200  seed=654571518
+    restart 2/3: logLik=5205.027  iters=200  seed=654571519
+    restart 3/3: logLik=5205.026  iters=200  seed=654571520
+    rep 3/5: NRMSE=0.001  NSE=0.993 (max=0.990)  BIC=-10360.835  logLik=5205.027  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0001 | sigma_k MSE=0.0000 MAE=0.0023 | beta MSE=0.0000 MAE=0.0001
+      covariance: sigma_sq MSE=0.0016 MAE=0.0401 | phi MSE=10828.3875 MAE=104.0595 | tau_sq MSE=0.0000 MAE=0.0057
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 44.7s (6000 evals)
+Log-lik: 5386.10, AIC: -10760.20, AIC_eff: -9780.51, BIC_eff: -10749.47
+Warm-up period: 62 days
+    restart 1/3: logLik=2321.877  iters=200  seed=438878440
+    restart 2/3: logLik=5386.101  iters=200  seed=438878441
+    restart 3/3: logLik=2231.005  iters=200  seed=438878442
+    rep 4/5: NRMSE=0.001  NSE=0.989 (max=0.990)  BIC=-10722.984  logLik=5386.101  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0051 | sigma_k MSE=0.0000 MAE=0.0001 | beta MSE=0.0000 MAE=0.0001
+      covariance: sigma_sq MSE=0.0021 MAE=0.0457 | phi MSE=13364.3325 MAE=115.6042 | tau_sq MSE=0.0000 MAE=0.0063
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 44.6s (6000 evals)
+Log-lik: 4006.46, AIC: -8000.92, AIC_eff: -7846.46, BIC_eff: -7979.48
+Warm-up period: 29 days
+    restart 1/3: logLik=4006.461  iters=200  seed=433015236
+    restart 2/3: logLik=4006.461  iters=200  seed=433015237
+    restart 3/3: logLik=4006.461  iters=200  seed=433015238
+    rep 5/5: NRMSE=0.004  NSE=0.990 (max=0.990)  BIC=-7963.705  logLik=4006.461  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0045 | sigma_k MSE=0.0000 MAE=0.0030 | beta MSE=0.0000 MAE=0.0012
+      covariance: sigma_sq MSE=0.0009 MAE=0.0293 | phi MSE=44.5912 MAE=6.6777 | tau_sq MSE=0.0000 MAE=0.0045
+  ✓ Cell complete in 222.5s
+
+======================================================================
+  Grid cell 2/12: K_true=1, noise_tier=medium (SNR=20.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 44.6s (6000 evals)
+Log-lik: 2936.73, AIC: -5861.45, AIC_eff: -4871.46, BIC_eff: -5850.78
+Warm-up period: 44 days
+    restart 1/3: logLik=2936.719  iters=200  seed=858597919
+    restart 2/3: logLik=906.862  iters=200  seed=858597920
+    restart 3/3: logLik=2936.727  iters=200  seed=858597921
+    rep 1/5: NRMSE=0.003  NSE=0.957 (max=0.952)  BIC=-5824.235  logLik=2936.727  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0048 | sigma_k MSE=0.0001 MAE=0.0090 | beta MSE=0.0000 MAE=0.0007
+      covariance: sigma_sq MSE=0.0000 MAE=0.0057 | phi MSE=1.7322 MAE=1.3161 | tau_sq MSE=0.0000 MAE=0.0005
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 44.8s (6000 evals)
+Log-lik: 2597.78, AIC: -5183.57, AIC_eff: -4489.42, BIC_eff: -5170.80
+Warm-up period: 57 days
+    restart 1/3: logLik=1132.128  iters=200  seed=85945639
+    restart 2/3: logLik=2597.780  iters=200  seed=85945640
+    restart 3/3: logLik=2597.785  iters=200  seed=85945641
+    rep 2/5: NRMSE=0.006  NSE=0.961 (max=0.952)  BIC=-5146.351  logLik=2597.785  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0069 | sigma_k MSE=0.0001 MAE=0.0107 | beta MSE=0.0000 MAE=0.0020
+      covariance: sigma_sq MSE=0.0001 MAE=0.0098 | phi MSE=1.9626 MAE=1.4009 | tau_sq MSE=0.0000 MAE=0.0000
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 44.8s (5940 evals)
+Log-lik: 2751.81, AIC: -5491.62, AIC_eff: -5074.92, BIC_eff: -5475.86
+Warm-up period: 67 days
+    restart 1/3: logLik=2751.812  iters=197  seed=697368029
+    restart 2/3: logLik=2751.812  iters=200  seed=697368030
+    restart 3/3: logLik=2751.812  iters=197  seed=697368031
+    rep 3/5: NRMSE=0.006  NSE=0.948 (max=0.952)  BIC=-5454.407  logLik=2751.812  lag_err=0.000
+      kernel params: delta MSE=0.0007 MAE=0.0267 | sigma_k MSE=0.0001 MAE=0.0096 | beta MSE=0.0000 MAE=0.0010
+      covariance: sigma_sq MSE=0.0001 MAE=0.0090 | phi MSE=0.7461 MAE=0.8638 | tau_sq MSE=0.0000 MAE=0.0000
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 45.3s (6000 evals)
+Log-lik: 3602.50, AIC: -7192.99, AIC_eff: -6951.47, BIC_eff: -7174.08
+Warm-up period: 57 days
+    restart 1/3: logLik=2873.033  iters=200  seed=201469536
+    restart 2/3: logLik=3602.495  iters=200  seed=201469537
+    restart 3/3: logLik=2274.608  iters=200  seed=201469538
+    rep 4/5: NRMSE=0.034  NSE=0.955 (max=0.952)  BIC=-7155.772  logLik=3602.495  lag_err=0.000
+      kernel params: delta MSE=0.0001 MAE=0.0104 | sigma_k MSE=0.0055 MAE=0.0744 | beta MSE=0.0000 MAE=0.0070
+      covariance: sigma_sq MSE=0.0002 MAE=0.0132 | phi MSE=8.8225 MAE=2.9703 | tau_sq MSE=0.0000 MAE=0.0027
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 42.4s (5620 evals)
+Log-lik: 2246.97, AIC: -4481.94, AIC_eff: -3874.11, BIC_eff: -4468.39
+Warm-up period: 27 days
+    restart 1/3: logLik=2246.968  iters=191  seed=94177348
+    restart 2/3: logLik=2246.968  iters=180  seed=94177349
+    restart 3/3: logLik=2246.968  iters=191  seed=94177350
+    rep 5/5: NRMSE=0.004  NSE=0.969 (max=0.952)  BIC=-4444.718  logLik=2246.968  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0028 | sigma_k MSE=0.0002 MAE=0.0156 | beta MSE=0.0000 MAE=0.0007
+      covariance: sigma_sq MSE=0.0020 MAE=0.0449 | phi MSE=36.9663 MAE=6.0800 | tau_sq MSE=0.0000 MAE=0.0004
+  ✓ Cell complete in 222.0s
+
+======================================================================
+  Grid cell 3/12: K_true=1, noise_tier=high (SNR=5.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 44.9s (6000 evals)
+Log-lik: 3824.00, AIC: -7636.00, AIC_eff: -7205.44, BIC_eff: -7620.43
+Warm-up period: 64 days
+    restart 1/3: logLik=3824.001  iters=200  seed=526478979
+    restart 2/3: logLik=3824.000  iters=200  seed=526478980
+    restart 3/3: logLik=3824.001  iters=200  seed=526478981
+    rep 1/5: NRMSE=0.006  NSE=0.850 (max=0.833)  BIC=-7598.784  logLik=3824.001  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0054 | sigma_k MSE=0.0009 MAE=0.0301 | beta MSE=0.0000 MAE=0.0006
+      covariance: sigma_sq MSE=0.0001 MAE=0.0091 | phi MSE=17.3843 MAE=4.1694 | tau_sq MSE=0.0000 MAE=0.0022
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 40.3s (5390 evals)
+Log-lik: 1958.15, AIC: -3904.31, AIC_eff: -3505.02, BIC_eff: -3888.30
+Warm-up period: 48 days
+    restart 1/3: logLik=957.419  iters=168  seed=975622351
+    restart 2/3: logLik=1958.155  iters=188  seed=975622352
+    restart 3/3: logLik=1958.155  iters=183  seed=975622353
+    rep 2/5: NRMSE=0.003  NSE=0.848 (max=0.833)  BIC=-3867.091  logLik=1958.155  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0051 | sigma_k MSE=0.0002 MAE=0.0129 | beta MSE=0.0000 MAE=0.0002
+      covariance: sigma_sq MSE=0.0001 MAE=0.0111 | phi MSE=1.4159 MAE=1.1899 | tau_sq MSE=0.0000 MAE=0.0006
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 40.5s (5420 evals)
+Log-lik: 755.17, AIC: -1498.35, AIC_eff: -958.18, BIC_eff: -1484.10
+Warm-up period: 69 days
+    restart 1/3: logLik=755.174  iters=195  seed=735752370
+    restart 2/3: logLik=2.723  iters=147  seed=735752371
+    restart 3/3: logLik=755.174  iters=200  seed=735752372
+    rep 3/5: NRMSE=0.010  NSE=0.836 (max=0.833)  BIC=-1461.130  logLik=755.174  lag_err=0.000
+      kernel params: delta MSE=0.0003 MAE=0.0173 | sigma_k MSE=0.0005 MAE=0.0234 | beta MSE=0.0000 MAE=0.0024
+      covariance: sigma_sq MSE=0.0002 MAE=0.0132 | phi MSE=24.3010 MAE=4.9296 | tau_sq MSE=0.0000 MAE=0.0003
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 42.5s (5570 evals)
+Log-lik: -327.66, AIC: 667.31, AIC_eff: 842.87, BIC_eff: 688.03
+Warm-up period: 39 days
+    restart 1/3: logLik=-327.656  iters=197  seed=717477277
+    restart 2/3: logLik=-327.656  iters=183  seed=717477278
+    restart 3/3: logLik=-327.656  iters=177  seed=717477279
+    rep 4/5: NRMSE=0.001  NSE=0.845 (max=0.833)  BIC=704.529  logLik=-327.656  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0013 | sigma_k MSE=0.0000 MAE=0.0024 | beta MSE=0.0000 MAE=0.0002
+      covariance: sigma_sq MSE=0.0014 MAE=0.0371 | phi MSE=1.1542 MAE=1.0744 | tau_sq MSE=0.0000 MAE=0.0005
+Fitting GP-SWR: K=1, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 39.3s (5190 evals)
+Log-lik: -231.01, AIC: 474.03, AIC_eff: 898.11, BIC_eff: 489.69
+Warm-up period: 81 days
+    restart 1/3: logLik=-231.014  iters=200  seed=786064305
+    restart 2/3: logLik=-1756.786  iters=190  seed=786064306
+    restart 3/3: logLik=-1811.207  iters=129  seed=786064307
+    rep 5/5: NRMSE=0.003  NSE=0.878 (max=0.833)  BIC=511.245  logLik=-231.014  lag_err=0.000
+      kernel params: delta MSE=0.0001 MAE=0.0087 | sigma_k MSE=0.0000 MAE=0.0051 | beta MSE=0.0000 MAE=0.0007
+      covariance: sigma_sq MSE=18.3871 MAE=4.2880 | phi MSE=6877.6964 MAE=82.9319 | tau_sq MSE=0.0000 MAE=0.0010
+  ✓ Cell complete in 207.6s
+
+======================================================================
+  Grid cell 4/12: K_true=2, noise_tier=low (SNR=100.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.6s (6000 evals)
+Log-lik: 4898.36, AIC: -9778.72, AIC_eff: -8480.20, BIC_eff: -9761.53
+Warm-up period: 45 days
+    restart 1/3: logLik=4891.755  iters=200  seed=513226573
+    restart 2/3: logLik=4898.362  iters=200  seed=513226574
+    restart 3/3: logLik=4879.554  iters=200  seed=513226575
+    rep 1/5: NRMSE=0.002  NSE=0.990 (max=0.990)  BIC=-9722.896  logLik=4898.362  lag_err=0.000
+      kernel params: delta MSE=0.0001 MAE=0.0071 | sigma_k MSE=0.0001 MAE=0.0102 | beta MSE=0.0000 MAE=0.0005
+      covariance: sigma_sq MSE=0.0011 MAE=0.0337 | phi MSE=12449.9389 MAE=111.5793 | tau_sq MSE=0.0000 MAE=0.0049
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.4s (6000 evals)
+Log-lik: 5165.71, AIC: -10313.41, AIC_eff: -8590.91, BIC_eff: -10298.73
+Warm-up period: 54 days
+    restart 1/3: logLik=5165.045  iters=200  seed=128113633
+    restart 2/3: logLik=5164.773  iters=200  seed=128113634
+    restart 3/3: logLik=5165.705  iters=200  seed=128113635
+    rep 2/5: NRMSE=0.002  NSE=0.987 (max=0.990)  BIC=-10257.584  logLik=5165.705  lag_err=0.000
+      kernel params: delta MSE=0.0001 MAE=0.0070 | sigma_k MSE=0.0000 MAE=0.0055 | beta MSE=0.0000 MAE=0.0003
+      covariance: sigma_sq MSE=0.0015 MAE=0.0386 | phi MSE=10205.7776 MAE=101.0236 | tau_sq MSE=0.0000 MAE=0.0055
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.4s (6000 evals)
+Log-lik: 4176.43, AIC: -8334.87, AIC_eff: -7520.30, BIC_eff: -8313.55
+Warm-up period: 73 days
+    restart 1/3: logLik=4176.434  iters=200  seed=839748229
+    restart 2/3: logLik=2011.671  iters=200  seed=839748230
+    restart 3/3: logLik=2021.039  iters=200  seed=839748231
+    rep 3/5: NRMSE=0.010  NSE=0.987 (max=0.990)  BIC=-8279.042  logLik=4176.434  lag_err=0.000
+      kernel params: delta MSE=0.0005 MAE=0.0188 | sigma_k MSE=0.0015 MAE=0.0372 | beta MSE=0.0000 MAE=0.0037
+      covariance: sigma_sq MSE=0.5239 MAE=0.7238 | phi MSE=6219.9496 MAE=78.8667 | tau_sq MSE=0.0000 MAE=0.0033
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.2s (6000 evals)
+Log-lik: 4537.28, AIC: -9056.55, AIC_eff: -7914.72, BIC_eff: -9038.22
+Warm-up period: 86 days
+    restart 1/3: logLik=4537.277  iters=200  seed=450385938
+    restart 2/3: logLik=2522.165  iters=200  seed=450385939
+    restart 3/3: logLik=3920.565  iters=200  seed=450385940
+    rep 4/5: NRMSE=0.002  NSE=0.989 (max=0.990)  BIC=-9000.728  logLik=4537.277  lag_err=0.000
+      kernel params: delta MSE=0.0000 MAE=0.0039 | sigma_k MSE=0.0000 MAE=0.0055 | beta MSE=0.0000 MAE=0.0003
+      covariance: sigma_sq MSE=1.7034 MAE=1.3051 | phi MSE=14715.2109 MAE=121.3063 | tau_sq MSE=0.0000 MAE=0.0044
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.2s (6000 evals)
+Log-lik: 4616.31, AIC: -9214.63, AIC_eff: -7754.22, BIC_eff: -9198.48
+Warm-up period: 66 days
+    restart 1/3: logLik=4609.422  iters=200  seed=500351915
+    restart 2/3: logLik=4616.314  iters=200  seed=500351916
+    restart 3/3: logLik=2577.006  iters=200  seed=500351917
+    rep 5/5: NRMSE=0.002  NSE=0.988 (max=0.990)  BIC=-9158.801  logLik=4616.314  lag_err=0.000
+      kernel params: delta MSE=0.0002 MAE=0.0109 | sigma_k MSE=0.0000 MAE=0.0056 | beta MSE=0.0000 MAE=0.0002
+      covariance: sigma_sq MSE=0.0006 MAE=0.0245 | phi MSE=1978.5863 MAE=44.4813 | tau_sq MSE=0.0000 MAE=0.0039
+  ✓ Cell complete in 236.8s
+
+======================================================================
+  Grid cell 5/12: K_true=2, noise_tier=medium (SNR=20.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 48.2s (6000 evals)
+Log-lik: 1278.39, AIC: -2538.78, AIC_eff: -1309.67, BIC_eff: -2521.10
+Warm-up period: 48 days
+    restart 1/3: logLik=1241.170  iters=200  seed=370798024
+    restart 2/3: logLik=-22.489  iters=200  seed=370798025
+    restart 3/3: logLik=1278.390  iters=200  seed=370798026
+    rep 1/5: NRMSE=0.006  NSE=0.951 (max=0.952)  BIC=-2482.953  logLik=1278.390  lag_err=0.001
+      kernel params: delta MSE=0.0007 MAE=0.0191 | sigma_k MSE=0.0005 MAE=0.0196 | beta MSE=0.0000 MAE=0.0022
+      covariance: sigma_sq MSE=260.6719 MAE=16.1453 | phi MSE=12560.6271 MAE=112.0742 | tau_sq MSE=0.0000 MAE=0.0012
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 48.4s (6000 evals)
+Log-lik: 3069.36, AIC: -6120.72, AIC_eff: -5709.98, BIC_eff: -6093.43
+Warm-up period: 85 days
+    restart 1/3: logLik=3069.362  iters=200  seed=182549637
+    restart 2/3: logLik=2332.736  iters=200  seed=182549638
+    restart 3/3: logLik=2334.101  iters=200  seed=182549639
+    rep 2/5: NRMSE=0.040  NSE=0.944 (max=0.952)  BIC=-6064.896  logLik=3069.362  lag_err=0.000
+      kernel params: delta MSE=0.0011 MAE=0.0278 | sigma_k MSE=0.0024 MAE=0.0396 | beta MSE=0.0000 MAE=0.0049
+      covariance: sigma_sq MSE=0.8817 MAE=0.9390 | phi MSE=470.0775 MAE=21.6813 | tau_sq MSE=0.0000 MAE=0.0017
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.2s (6000 evals)
+Log-lik: 3838.83, AIC: -7659.66, AIC_eff: -6967.21, BIC_eff: -7636.91
+Warm-up period: 69 days
+    restart 1/3: logLik=3831.693  iters=200  seed=926764988
+    restart 2/3: logLik=3830.220  iters=200  seed=926764989
+    restart 3/3: logLik=3838.828  iters=200  seed=926764990
+    rep 3/5: NRMSE=0.007  NSE=0.949 (max=0.952)  BIC=-7603.829  logLik=3838.828  lag_err=0.001
+      kernel params: delta MSE=0.0008 MAE=0.0262 | sigma_k MSE=0.0004 MAE=0.0203 | beta MSE=0.0000 MAE=0.0007
+      covariance: sigma_sq MSE=0.0001 MAE=0.0114 | phi MSE=5.3588 MAE=2.3149 | tau_sq MSE=0.0000 MAE=0.0021
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.7s (6000 evals)
+Log-lik: 3755.18, AIC: -7492.36, AIC_eff: -6501.46, BIC_eff: -7472.77
+Warm-up period: 81 days
+    restart 1/3: logLik=3755.179  iters=200  seed=781567455
+    restart 2/3: logLik=1859.188  iters=200  seed=781567456
+    restart 3/3: logLik=3752.959  iters=200  seed=781567457
+    rep 4/5: NRMSE=0.004  NSE=0.949 (max=0.952)  BIC=-7436.531  logLik=3755.179  lag_err=0.000
+      kernel params: delta MSE=0.0002 MAE=0.0143 | sigma_k MSE=0.0002 MAE=0.0128 | beta MSE=0.0000 MAE=0.0006
+      covariance: sigma_sq MSE=0.0000 MAE=0.0023 | phi MSE=1.2610 MAE=1.1230 | tau_sq MSE=0.0000 MAE=0.0013
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.5s (6000 evals)
+Log-lik: 1218.20, AIC: -2418.39, AIC_eff: -726.80, BIC_eff: -2403.55
+Warm-up period: 86 days
+    restart 1/3: logLik=1218.195  iters=200  seed=643865120
+    restart 2/3: logLik=1214.461  iters=200  seed=643865121
+    restart 3/3: logLik=398.151  iters=200  seed=643865122
+    rep 5/5: NRMSE=0.077  NSE=0.948 (max=0.952)  BIC=-2362.563  logLik=1218.195  lag_err=0.002
+      kernel params: delta MSE=0.0252 MAE=0.1171 | sigma_k MSE=0.5306 MAE=0.5449 | beta MSE=0.0004 MAE=0.0179
+      covariance: sigma_sq MSE=0.0004 MAE=0.0212 | phi MSE=2170.5182 MAE=46.5888 | tau_sq MSE=0.0000 MAE=0.0030
+  ✓ Cell complete in 238.9s
+
+======================================================================
+  Grid cell 6/12: K_true=2, noise_tier=high (SNR=5.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 48.3s (6000 evals)
+Log-lik: -1031.62, AIC: 2081.23, AIC_eff: 3131.63, BIC_eff: 2100.31
+Warm-up period: 64 days
+    restart 1/3: logLik=-2021.948  iters=200  seed=402414364
+    restart 2/3: logLik=-1031.617  iters=200  seed=402414365
+    restart 3/3: logLik=-1041.173  iters=200  seed=402414366
+    rep 1/5: NRMSE=0.007  NSE=0.847 (max=0.833)  BIC=2137.062  logLik=-1031.617  lag_err=0.001
+      kernel params: delta MSE=0.0014 MAE=0.0340 | sigma_k MSE=0.0001 MAE=0.0081 | beta MSE=0.0000 MAE=0.0006
+      covariance: sigma_sq MSE=0.1876 MAE=0.4332 | phi MSE=212.7776 MAE=14.5869 | tau_sq MSE=0.0000 MAE=0.0017
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.5s (6000 evals)
+Log-lik: -707.70, AIC: 1433.41, AIC_eff: 1971.70, BIC_eff: 1458.36
+Warm-up period: 69 days
+    restart 1/3: logLik=-707.704  iters=200  seed=822761613
+    restart 2/3: logLik=-1636.188  iters=200  seed=822761614
+    restart 3/3: logLik=-707.763  iters=200  seed=822761615
+    rep 2/5: NRMSE=0.011  NSE=0.859 (max=0.833)  BIC=1489.235  logLik=-707.704  lag_err=0.001
+      kernel params: delta MSE=0.0033 MAE=0.0429 | sigma_k MSE=0.0002 MAE=0.0128 | beta MSE=0.0000 MAE=0.0019
+      covariance: sigma_sq MSE=0.0110 MAE=0.1051 | phi MSE=4.5824 MAE=2.1406 | tau_sq MSE=0.0000 MAE=0.0008
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.5s (6000 evals)
+Log-lik: -1634.77, AIC: 3287.55, AIC_eff: 3620.98, BIC_eff: 3316.63
+Warm-up period: 65 days
+    restart 1/3: logLik=-1634.775  iters=200  seed=545429119
+    restart 2/3: logLik=-1634.775  iters=200  seed=545429120
+    restart 3/3: logLik=-1634.775  iters=200  seed=545429121
+    rep 3/5: NRMSE=0.018  NSE=0.829 (max=0.833)  BIC=3343.376  logLik=-1634.775  lag_err=0.003
+      kernel params: delta MSE=0.0053 MAE=0.0552 | sigma_k MSE=0.0133 MAE=0.0837 | beta MSE=0.0000 MAE=0.0058
+      covariance: sigma_sq MSE=0.0008 MAE=0.0290 | phi MSE=0.0302 MAE=0.1739 | tau_sq MSE=0.0000 MAE=0.0022
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 48.4s (6000 evals)
+Log-lik: -238.99, AIC: 495.98, AIC_eff: 1629.68, BIC_eff: 514.38
+Warm-up period: 68 days
+    restart 1/3: logLik=-238.996  iters=200  seed=443414199
+    restart 2/3: logLik=-238.992  iters=200  seed=443414200
+    restart 3/3: logLik=-238.992  iters=200  seed=443414201
+    rep 4/5: NRMSE=0.010  NSE=0.811 (max=0.833)  BIC=551.810  logLik=-238.992  lag_err=0.001
+      kernel params: delta MSE=0.0004 MAE=0.0198 | sigma_k MSE=0.0006 MAE=0.0250 | beta MSE=0.0000 MAE=0.0025
+      covariance: sigma_sq MSE=0.0031 MAE=0.0558 | phi MSE=7.3505 MAE=2.7112 | tau_sq MSE=0.0000 MAE=0.0016
+Fitting GP-SWR: K=2, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 47.6s (6000 evals)
+Log-lik: 965.53, AIC: -1913.07, AIC_eff: -1536.65, BIC_eff: -1885.02
+Warm-up period: 52 days
+    restart 1/3: logLik=965.487  iters=200  seed=450459553
+    restart 2/3: logLik=965.534  iters=200  seed=450459554
+    restart 3/3: logLik=965.531  iters=200  seed=450459555
+    rep 5/5: NRMSE=0.022  NSE=0.834 (max=0.833)  BIC=-1857.240  logLik=965.534  lag_err=0.002
+      kernel params: delta MSE=0.0015 MAE=0.0384 | sigma_k MSE=0.0009 MAE=0.0306 | beta MSE=0.0000 MAE=0.0037
+      covariance: sigma_sq MSE=0.0001 MAE=0.0111 | phi MSE=0.0002 MAE=0.0142 | tau_sq MSE=0.0000 MAE=0.0003
+  ✓ Cell complete in 239.3s
+
+======================================================================
+  Grid cell 7/12: K_true=3, noise_tier=low (SNR=100.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 49.4s (6000 evals)
+Log-lik: 3606.39, AIC: -7188.78, AIC_eff: -6779.98, BIC_eff: -7149.05
+Warm-up period: 85 days
+    restart 1/3: logLik=3606.392  iters=200  seed=227238722
+    restart 2/3: logLik=1916.172  iters=200  seed=227238723
+    restart 3/3: logLik=1402.587  iters=200  seed=227238724
+    rep 1/5: NRMSE=0.026  NSE=0.989 (max=0.990)  BIC=-7114.347  logLik=3606.392  lag_err=0.000
+      kernel params: delta MSE=0.0002 MAE=0.0103 | sigma_k MSE=0.0020 MAE=0.0363 | beta MSE=0.0000 MAE=0.0038
+      covariance: sigma_sq MSE=0.0636 MAE=0.2521 | phi MSE=65.1453 MAE=8.0713 | tau_sq MSE=0.0000 MAE=0.0038
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 49.8s (6000 evals)
+Log-lik: 2396.44, AIC: -4768.89, AIC_eff: -3103.24, BIC_eff: -4745.50
+Warm-up period: 84 days
+    restart 1/3: logLik=2054.298  iters=200  seed=554584787
+    restart 2/3: logLik=2396.444  iters=200  seed=554584788
+    restart 3/3: logLik=2291.567  iters=200  seed=554584789
+    rep 2/5: NRMSE=0.645  NSE=0.584 (max=0.990)  BIC=-4694.452  logLik=2396.444  lag_err=0.126
+      kernel params: delta MSE=75.1827 MAE=5.1238 | sigma_k MSE=2.3748 MAE=1.1379 | beta MSE=0.0143 MAE=0.0950
+      covariance: sigma_sq MSE=2.2927 MAE=1.5142 | phi MSE=4.3058 MAE=2.0750 | tau_sq MSE=0.0000 MAE=0.0035
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 50.6s (6000 evals)
+Log-lik: 4378.36, AIC: -8732.72, AIC_eff: -6960.45, BIC_eff: -8710.07
+Warm-up period: 83 days
+    restart 1/3: logLik=4352.951  iters=200  seed=887889843
+    restart 2/3: logLik=4378.359  iters=200  seed=887889844
+    restart 3/3: logLik=3934.184  iters=200  seed=887889845
+    rep 3/5: NRMSE=0.011  NSE=0.990 (max=0.990)  BIC=-8658.281  logLik=4378.359  lag_err=0.002
+      kernel params: delta MSE=0.0020 MAE=0.0421 | sigma_k MSE=0.0006 MAE=0.0191 | beta MSE=0.0000 MAE=0.0014
+      covariance: sigma_sq MSE=5.1520 MAE=2.2698 | phi MSE=9760.5298 MAE=98.7954 | tau_sq MSE=0.0000 MAE=0.0039
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 49.4s (6000 evals)
+Log-lik: 3990.35, AIC: -7956.71, AIC_eff: -5805.18, BIC_eff: -7936.36
+Warm-up period: 57 days
+    restart 1/3: logLik=3990.355  iters=200  seed=63817256
+    restart 2/3: logLik=1691.099  iters=200  seed=63817257
+    restart 3/3: logLik=2202.587  iters=200  seed=63817258
+    rep 4/5: NRMSE=0.016  NSE=0.988 (max=0.990)  BIC=-7882.273  logLik=3990.355  lag_err=0.002
+      kernel params: delta MSE=0.0029 MAE=0.0530 | sigma_k MSE=0.0003 MAE=0.0137 | beta MSE=0.0000 MAE=0.0022
+      covariance: sigma_sq MSE=0.0325 MAE=0.1803 | phi MSE=80.0128 MAE=8.9450 | tau_sq MSE=0.0000 MAE=0.0033
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 49.8s (6000 evals)
+Log-lik: 3485.61, AIC: -6947.21, AIC_eff: -5900.94, BIC_eff: -6918.35
+Warm-up period: 86 days
+    restart 1/3: logLik=3365.686  iters=200  seed=858291294
+    restart 2/3: logLik=1899.018  iters=200  seed=858291295
+    restart 3/3: logLik=3485.607  iters=200  seed=858291296
+    rep 5/5: NRMSE=0.019  NSE=0.991 (max=0.990)  BIC=-6872.778  logLik=3485.607  lag_err=0.001
+      kernel params: delta MSE=0.0013 MAE=0.0339 | sigma_k MSE=0.0026 MAE=0.0351 | beta MSE=0.0000 MAE=0.0041
+      covariance: sigma_sq MSE=0.0772 MAE=0.2779 | phi MSE=3.6116 MAE=1.9004 | tau_sq MSE=0.0000 MAE=0.0031
+  ✓ Cell complete in 249.1s
+
+======================================================================
+  Grid cell 8/12: K_true=3, noise_tier=medium (SNR=20.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 51.5s (6000 evals)
+Log-lik: -531.99, AIC: 1087.98, AIC_eff: 1927.97, BIC_eff: 1119.42
+Warm-up period: 73 days
+    restart 1/3: logLik=-534.716  iters=200  seed=827631171
+    restart 2/3: logLik=-531.991  iters=200  seed=827631172
+    restart 3/3: logLik=-536.997  iters=200  seed=827631173
+    rep 1/5: NRMSE=0.460  NSE=0.770 (max=0.952)  BIC=1162.419  logLik=-531.991  lag_err=0.095
+      kernel params: delta MSE=153.1748 MAE=7.1666 | sigma_k MSE=1.6434 MAE=0.8070 | beta MSE=0.0140 MAE=0.0836
+      covariance: sigma_sq MSE=1.9696 MAE=1.4034 | phi MSE=94.8169 MAE=9.7374 | tau_sq MSE=0.0000 MAE=0.0015
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 50.4s (6000 evals)
+Log-lik: 1187.78, AIC: -2351.55, AIC_eff: -208.08, BIC_eff: -2331.16
+Warm-up period: 90 days
+    restart 1/3: logLik=1187.777  iters=200  seed=631664399
+    restart 2/3: logLik=347.934  iters=200  seed=631664400
+    restart 3/3: logLik=-427.237  iters=200  seed=631664401
+    rep 2/5: NRMSE=0.032  NSE=0.945 (max=0.952)  BIC=-2277.118  logLik=1187.777  lag_err=0.002
+      kernel params: delta MSE=0.0174 MAE=0.1053 | sigma_k MSE=0.0042 MAE=0.0631 | beta MSE=0.0000 MAE=0.0070
+      covariance: sigma_sq MSE=1.1373 MAE=1.0664 | phi MSE=272.7187 MAE=16.5142 | tau_sq MSE=0.0000 MAE=0.0009
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 50.5s (6000 evals)
+Log-lik: 1145.10, AIC: -2266.20, AIC_eff: -573.22, BIC_eff: -2243.01
+Warm-up period: 59 days
+    restart 1/3: logLik=1000.779  iters=200  seed=165229080
+    restart 2/3: logLik=1145.100  iters=200  seed=165229081
+    restart 3/3: logLik=1084.423  iters=200  seed=165229082
+    rep 3/5: NRMSE=0.021  NSE=0.958 (max=0.952)  BIC=-2191.764  logLik=1145.100  lag_err=0.000
+      kernel params: delta MSE=0.0002 MAE=0.0131 | sigma_k MSE=0.0118 MAE=0.0793 | beta MSE=0.0000 MAE=0.0045
+      covariance: sigma_sq MSE=0.0399 MAE=0.1998 | phi MSE=196.5794 MAE=14.0207 | tau_sq MSE=0.0000 MAE=0.0009
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 51.7s (6000 evals)
+Log-lik: 406.41, AIC: -788.82, AIC_eff: 553.14, BIC_eff: -762.89
+Warm-up period: 86 days
+    restart 1/3: logLik=406.411  iters=200  seed=758087740
+    restart 2/3: logLik=266.622  iters=200  seed=758087741
+    restart 3/3: logLik=234.318  iters=200  seed=758087742
+    rep 4/5: NRMSE=0.018  NSE=0.953 (max=0.952)  BIC=-714.386  logLik=406.411  lag_err=0.001
+      kernel params: delta MSE=0.0157 MAE=0.0744 | sigma_k MSE=0.0045 MAE=0.0641 | beta MSE=0.0000 MAE=0.0049
+      covariance: sigma_sq MSE=0.0118 MAE=0.1088 | phi MSE=426.7800 MAE=20.6587 | tau_sq MSE=0.0000 MAE=0.0020
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 51.9s (6000 evals)
+Log-lik: 803.03, AIC: -1582.06, AIC_eff: 288.07, BIC_eff: -1560.04
+Warm-up period: 50 days
+    restart 1/3: logLik=-1092.820  iters=200  seed=700522966
+    restart 2/3: logLik=803.029  iters=200  seed=700522967
+    restart 3/3: logLik=-453.856  iters=200  seed=700522968
+    rep 5/5: NRMSE=0.042  NSE=0.959 (max=0.952)  BIC=-1507.621  logLik=803.029  lag_err=0.005
+      kernel params: delta MSE=0.0250 MAE=0.1236 | sigma_k MSE=0.0087 MAE=0.0808 | beta MSE=0.0001 MAE=0.0078
+      covariance: sigma_sq MSE=0.0250 MAE=0.1580 | phi MSE=661.8684 MAE=25.7268 | tau_sq MSE=0.0000 MAE=0.0010
+  ✓ Cell complete in 256.0s
+
+======================================================================
+  Grid cell 9/12: K_true=3, noise_tier=high (SNR=5.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 51.3s (6000 evals)
+Log-lik: -1948.64, AIC: 3921.27, AIC_eff: 5877.19, BIC_eff: 3942.76
+Warm-up period: 75 days
+    restart 1/3: logLik=-2680.453  iters=200  seed=354525968
+    restart 2/3: logLik=-1980.695  iters=200  seed=354525969
+    restart 3/3: logLik=-1948.637  iters=200  seed=354525970
+    rep 1/5: NRMSE=0.015  NSE=0.820 (max=0.833)  BIC=3995.710  logLik=-1948.637  lag_err=0.001
+      kernel params: delta MSE=0.0007 MAE=0.0206 | sigma_k MSE=0.0026 MAE=0.0492 | beta MSE=0.0000 MAE=0.0057
+      covariance: sigma_sq MSE=0.0476 MAE=0.2181 | phi MSE=29.3996 MAE=5.4221 | tau_sq MSE=0.0000 MAE=0.0017
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 51.3s (6000 evals)
+Log-lik: -2031.03, AIC: 4086.06, AIC_eff: 5211.77, BIC_eff: 4114.06
+Warm-up period: 66 days
+    restart 1/3: logLik=-2036.160  iters=200  seed=67920002
+    restart 2/3: logLik=-2031.029  iters=200  seed=67920003
+    restart 3/3: logLik=-2036.005  iters=200  seed=67920004
+    rep 2/5: NRMSE=0.212  NSE=0.806 (max=0.833)  BIC=4160.494  logLik=-2031.029  lag_err=0.187
+      kernel params: delta MSE=224.6347 MAE=12.1807 | sigma_k MSE=1.4515 MAE=0.8625 | beta MSE=0.0278 MAE=0.1352
+      covariance: sigma_sq MSE=0.0053 MAE=0.0726 | phi MSE=204.8867 MAE=14.3139 | tau_sq MSE=0.0000 MAE=0.0019
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 51.3s (6000 evals)
+Log-lik: -1193.97, AIC: 2411.94, AIC_eff: 4330.54, BIC_eff: 2433.65
+Warm-up period: 79 days
+    restart 1/3: logLik=-1202.623  iters=200  seed=970698024
+    restart 2/3: logLik=-1193.969  iters=200  seed=970698025
+    restart 3/3: logLik=-1425.804  iters=200  seed=970698026
+    rep 3/5: NRMSE=0.019  NSE=0.784 (max=0.833)  BIC=2486.375  logLik=-1193.969  lag_err=0.002
+      kernel params: delta MSE=0.0011 MAE=0.0253 | sigma_k MSE=0.0041 MAE=0.0518 | beta MSE=0.0000 MAE=0.0045
+      covariance: sigma_sq MSE=0.0023 MAE=0.0485 | phi MSE=3.2802 MAE=1.8111 | tau_sq MSE=0.0000 MAE=0.0009
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 50.8s (6000 evals)
+Log-lik: -1289.15, AIC: 2602.29, AIC_eff: 4475.45, BIC_eff: 2624.29
+Warm-up period: 76 days
+    restart 1/3: logLik=-2093.928  iters=200  seed=445687487
+    restart 2/3: logLik=-1289.146  iters=200  seed=445687488
+    restart 3/3: logLik=-2129.260  iters=200  seed=445687489
+    rep 4/5: NRMSE=0.146  NSE=0.809 (max=0.833)  BIC=2676.729  logLik=-1289.146  lag_err=0.015
+      kernel params: delta MSE=0.3583 MAE=0.4218 | sigma_k MSE=0.2287 MAE=0.4251 | beta MSE=0.0020 MAE=0.0406
+      covariance: sigma_sq MSE=0.2566 MAE=0.5066 | phi MSE=878.6961 MAE=29.6428 | tau_sq MSE=0.0000 MAE=0.0029
+Fitting GP-SWR: K=3, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 50.6s (6000 evals)
+Log-lik: -2170.42, AIC: 4364.83, AIC_eff: 4799.69, BIC_eff: 4403.86
+Warm-up period: 77 days
+    restart 1/3: logLik=-2172.690  iters=200  seed=893121121
+    restart 2/3: logLik=-2170.417  iters=200  seed=893121122
+    restart 3/3: logLik=-2189.766  iters=200  seed=893121123
+    rep 5/5: NRMSE=0.050  NSE=0.851 (max=0.833)  BIC=4439.270  logLik=-2170.417  lag_err=0.002
+      kernel params: delta MSE=0.0020 MAE=0.0411 | sigma_k MSE=0.0060 MAE=0.0632 | beta MSE=0.0002 MAE=0.0115
+      covariance: sigma_sq MSE=0.0092 MAE=0.0959 | phi MSE=0.1984 MAE=0.4454 | tau_sq MSE=0.0000 MAE=0.0014
+  ✓ Cell complete in 255.3s
+
+======================================================================
+  Grid cell 10/12: K_true=4, noise_tier=low (SNR=100.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 60.2s (6600 evals)
+Log-lik: 2739.72, AIC: -5449.44, AIC_eff: -4680.30, BIC_eff: -5405.63
+Warm-up period: 83 days
+    restart 1/3: logLik=2739.719  iters=200  seed=677919011
+    restart 2/3: logLik=2259.986  iters=200  seed=677919012
+    restart 3/3: logLik=2002.344  iters=200  seed=677919013
+    rep 1/5: NRMSE=0.060  NSE=0.988 (max=0.990)  BIC=-5356.392  logLik=2739.719  lag_err=0.001
+      kernel params: delta MSE=0.0007 MAE=0.0243 | sigma_k MSE=0.0374 MAE=0.1113 | beta MSE=0.0003 MAE=0.0116
+      covariance: sigma_sq MSE=27.2868 MAE=5.2237 | phi MSE=1340.9827 MAE=36.6194 | tau_sq MSE=0.0000 MAE=0.0019
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 59.4s (6600 evals)
+Log-lik: 1361.08, AIC: -2692.15, AIC_eff: -1870.03, BIC_eff: -2649.31
+Warm-up period: 75 days
+    restart 1/3: logLik=1170.127  iters=200  seed=778383497
+    restart 2/3: logLik=1359.111  iters=200  seed=778383498
+    restart 3/3: logLik=1361.077  iters=200  seed=778383499
+    rep 2/5: NRMSE=0.236  NSE=0.934 (max=0.990)  BIC=-2599.108  logLik=1361.077  lag_err=0.359
+      kernel params: delta MSE=526.9960 MAE=17.0421 | sigma_k MSE=0.2965 MAE=0.4202 | beta MSE=0.0248 MAE=0.1149
+      covariance: sigma_sq MSE=50.7182 MAE=7.1217 | phi MSE=276.1440 MAE=16.6176 | tau_sq MSE=0.0000 MAE=0.0005
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 60.2s (6600 evals)
+Log-lik: 2029.37, AIC: -4028.75, AIC_eff: -3027.24, BIC_eff: -3988.77
+Warm-up period: 67 days
+    restart 1/3: logLik=2029.374  iters=200  seed=759899441
+    restart 2/3: logLik=1197.559  iters=200  seed=759899442
+    restart 3/3: logLik=1639.602  iters=200  seed=759899443
+    rep 3/5: NRMSE=0.265  NSE=0.927 (max=0.990)  BIC=-3935.703  logLik=2029.374  lag_err=0.206
+      kernel params: delta MSE=850.6852 MAE=14.6367 | sigma_k MSE=1.3156 MAE=0.5885 | beta MSE=0.0051 MAE=0.0401
+      covariance: sigma_sq MSE=0.4708 MAE=0.6861 | phi MSE=455.7686 MAE=21.3487 | tau_sq MSE=0.0000 MAE=0.0011
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 60.0s (6600 evals)
+Log-lik: 1275.20, AIC: -2520.40, AIC_eff: -1523.87, BIC_eff: -2480.35
+Warm-up period: 66 days
+    restart 1/3: logLik=1275.201  iters=200  seed=194638708
+    restart 2/3: logLik=1194.173  iters=200  seed=194638709
+    restart 3/3: logLik=894.138  iters=200  seed=194638710
+    rep 4/5: NRMSE=0.330  NSE=0.890 (max=0.990)  BIC=-2427.356  logLik=1275.201  lag_err=0.254
+      kernel params: delta MSE=304.4571 MAE=14.7076 | sigma_k MSE=0.8311 MAE=0.7012 | beta MSE=0.0216 MAE=0.1130
+      covariance: sigma_sq MSE=0.5153 MAE=0.7178 | phi MSE=1274.7960 MAE=35.7043 | tau_sq MSE=0.0000 MAE=0.0013
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 59.8s (6600 evals)
+Log-lik: 2844.13, AIC: -5658.27, AIC_eff: -3805.33, BIC_eff: -5627.31
+Warm-up period: 73 days
+    restart 1/3: logLik=1652.421  iters=200  seed=363906031
+    restart 2/3: logLik=1624.271  iters=200  seed=363906032
+    restart 3/3: logLik=2844.133  iters=200  seed=363906033
+    rep 5/5: NRMSE=0.048  NSE=0.987 (max=0.990)  BIC=-5565.221  logLik=2844.133  lag_err=0.001
+      kernel params: delta MSE=0.0035 MAE=0.0523 | sigma_k MSE=0.0116 MAE=0.1028 | beta MSE=0.0001 MAE=0.0108
+      covariance: sigma_sq MSE=4.4900 MAE=2.1190 | phi MSE=86.8777 MAE=9.3208 | tau_sq MSE=0.0000 MAE=0.0005
+  ✓ Cell complete in 299.7s
+
+======================================================================
+  Grid cell 11/12: K_true=4, noise_tier=medium (SNR=20.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 61.4s (6600 evals)
+Log-lik: 883.29, AIC: -1736.57, AIC_eff: 123.15, BIC_eff: -1705.67
+Warm-up period: 79 days
+    restart 1/3: logLik=883.286  iters=200  seed=466721004
+    restart 2/3: logLik=-148.165  iters=200  seed=466721005
+    restart 3/3: logLik=650.042  iters=200  seed=466721006
+    rep 1/5: NRMSE=0.247  NSE=0.881 (max=0.952)  BIC=-1643.526  logLik=883.286  lag_err=0.002
+      kernel params: delta MSE=0.0159 MAE=0.1021 | sigma_k MSE=1.5159 MAE=0.6902 | beta MSE=0.0020 MAE=0.0291
+      covariance: sigma_sq MSE=1.2870 MAE=1.1345 | phi MSE=6.3612 MAE=2.5221 | tau_sq MSE=0.0000 MAE=0.0021
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 58.9s (6600 evals)
+Log-lik: -85.66, AIC: 201.31, AIC_eff: 1750.65, BIC_eff: 234.90
+Warm-up period: 72 days
+    restart 1/3: logLik=-245.051  iters=200  seed=497791542
+    restart 2/3: logLik=-262.262  iters=200  seed=497791543
+    restart 3/3: logLik=-85.656  iters=200  seed=497791544
+    rep 2/5: NRMSE=0.079  NSE=0.943 (max=0.952)  BIC=294.358  logLik=-85.656  lag_err=0.004
+      kernel params: delta MSE=0.0380 MAE=0.1468 | sigma_k MSE=0.0088 MAE=0.0905 | beta MSE=0.0002 MAE=0.0134
+      covariance: sigma_sq MSE=54.5670 MAE=7.3869 | phi MSE=477.2467 MAE=21.8460 | tau_sq MSE=0.0001 MAE=0.0120
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 59.1s (6600 evals)
+Log-lik: -555.04, AIC: 1140.08, AIC_eff: 2526.97, BIC_eff: 1175.30
+Warm-up period: 84 days
+    restart 1/3: logLik=-560.995  iters=200  seed=43803766
+    restart 2/3: logLik=-555.041  iters=200  seed=43803767
+    restart 3/3: logLik=-1338.060  iters=200  seed=43803768
+    rep 3/5: NRMSE=0.088  NSE=0.948 (max=0.952)  BIC=1233.128  logLik=-555.041  lag_err=0.015
+      kernel params: delta MSE=0.1856 MAE=0.2848 | sigma_k MSE=0.0946 MAE=0.2059 | beta MSE=0.0006 MAE=0.0177
+      covariance: sigma_sq MSE=2.3138 MAE=1.5211 | phi MSE=1.9629 MAE=1.4010 | tau_sq MSE=0.0000 MAE=0.0011
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 60.0s (6600 evals)
+Log-lik: -1155.51, AIC: 2341.03, AIC_eff: 4090.14, BIC_eff: 2372.83
+Warm-up period: 86 days
+    restart 1/3: logLik=-1155.514  iters=200  seed=546569504
+    restart 2/3: logLik=-1758.235  iters=200  seed=546569505
+    restart 3/3: logLik=-1992.278  iters=200  seed=546569506
+    rep 4/5: NRMSE=0.087  NSE=0.946 (max=0.952)  BIC=2434.073  logLik=-1155.514  lag_err=0.004
+      kernel params: delta MSE=0.0660 MAE=0.2166 | sigma_k MSE=0.1200 MAE=0.2374 | beta MSE=0.0017 MAE=0.0347
+      covariance: sigma_sq MSE=1.1251 MAE=1.0607 | phi MSE=981.8102 MAE=31.3339 | tau_sq MSE=0.0002 MAE=0.0126
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 60.4s (6600 evals)
+Log-lik: -1491.16, AIC: 3012.31, AIC_eff: 5718.01, BIC_eff: 3037.67
+Warm-up period: 86 days
+    restart 1/3: logLik=-1534.044  iters=200  seed=154289492
+    restart 2/3: logLik=-2140.773  iters=200  seed=154289493
+    restart 3/3: logLik=-1491.157  iters=200  seed=154289494
+    rep 5/5: NRMSE=0.141  NSE=0.927 (max=0.952)  BIC=3105.360  logLik=-1491.157  lag_err=0.007
+      kernel params: delta MSE=0.0282 MAE=0.1592 | sigma_k MSE=0.0593 MAE=0.1801 | beta MSE=0.0021 MAE=0.0381
+      covariance: sigma_sq MSE=1352.2862 MAE=36.7734 | phi MSE=147.3201 MAE=12.1375 | tau_sq MSE=0.0001 MAE=0.0107
+  ✓ Cell complete in 299.8s
+
+======================================================================
+  Grid cell 12/12: K_true=4, noise_tier=high (SNR=5.0)
+  5 oracle fits
+======================================================================
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 59.6s (6600 evals)
+Log-lik: -2384.20, AIC: 4798.41, AIC_eff: 6827.05, BIC_eff: 4828.03
+Warm-up period: 89 days
+    restart 1/3: logLik=-2384.205  iters=200  seed=743375907
+    restart 2/3: logLik=-2467.856  iters=200  seed=743375908
+    restart 3/3: logLik=-2656.859  iters=200  seed=743375909
+    rep 1/5: NRMSE=0.222  NSE=0.769 (max=0.833)  BIC=4891.455  logLik=-2384.205  lag_err=0.234
+      kernel params: delta MSE=151.6786 MAE=8.7974 | sigma_k MSE=0.1277 MAE=0.2155 | beta MSE=0.0214 MAE=0.1037
+      covariance: sigma_sq MSE=3.7328 MAE=1.9320 | phi MSE=547.4193 MAE=23.3970 | tau_sq MSE=0.0000 MAE=0.0021
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 55.3s (6600 evals)
+Log-lik: -2288.63, AIC: 4607.26, AIC_eff: 6204.32, BIC_eff: 4640.40
+Warm-up period: 71 days
+    restart 1/3: logLik=-2288.628  iters=200  seed=683048953
+    restart 2/3: logLik=-2323.371  iters=200  seed=683048954
+    restart 3/3: logLik=-2355.893  iters=200  seed=683048955
+    rep 2/5: NRMSE=0.339  NSE=0.672 (max=0.833)  BIC=4700.301  logLik=-2288.628  lag_err=0.424
+      kernel params: delta MSE=643.6380 MAE=18.1933 | sigma_k MSE=1.4186 MAE=0.9423 | beta MSE=0.0157 MAE=0.1138
+      covariance: sigma_sq MSE=0.0003 MAE=0.0172 | phi MSE=704.7093 MAE=26.5464 | tau_sq MSE=0.0005 MAE=0.0220
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 54.5s (6600 evals)
+Log-lik: -2644.01, AIC: 5318.02, AIC_eff: 7190.64, BIC_eff: 5348.82
+Warm-up period: 85 days
+    restart 1/3: logLik=-3108.428  iters=200  seed=922527839
+    restart 2/3: logLik=-3110.469  iters=200  seed=922527840
+    restart 3/3: logLik=-2644.011  iters=200  seed=922527841
+    rep 3/5: NRMSE=0.047  NSE=0.847 (max=0.833)  BIC=5411.067  logLik=-2644.011  lag_err=0.004
+      kernel params: delta MSE=0.0188 MAE=0.1340 | sigma_k MSE=0.0185 MAE=0.1111 | beta MSE=0.0002 MAE=0.0128
+      covariance: sigma_sq MSE=427.8264 MAE=20.6840 | phi MSE=98.6585 MAE=9.9327 | tau_sq MSE=0.0000 MAE=0.0012
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 54.7s (6600 evals)
+Log-lik: -2074.04, AIC: 4178.08, AIC_eff: 5998.37, BIC_eff: 4209.29
+Warm-up period: 88 days
+    restart 1/3: logLik=-2074.038  iters=200  seed=744762155
+    restart 2/3: logLik=-2253.256  iters=200  seed=744762156
+    restart 3/3: logLik=-2122.046  iters=200  seed=744762157
+    rep 4/5: NRMSE=0.060  NSE=0.849 (max=0.833)  BIC=4271.121  logLik=-2074.038  lag_err=0.006
+      kernel params: delta MSE=0.0275 MAE=0.1383 | sigma_k MSE=0.2052 MAE=0.2989 | beta MSE=0.0004 MAE=0.0174
+      covariance: sigma_sq MSE=3.8523 MAE=1.9627 | phi MSE=148.0948 MAE=12.1694 | tau_sq MSE=0.0000 MAE=0.0043
+Fitting GP-SWR: K=4, n=3652, m=10
+Using CMA-ES optimizer (maxiter=200)
+
+Fit complete in 55.9s (6600 evals)
+Log-lik: -1440.55, AIC: 2911.10, AIC_eff: 4625.45, BIC_eff: 2943.20
+Warm-up period: 74 days
+    restart 1/3: logLik=-1510.207  iters=200  seed=366642657
+    restart 2/3: logLik=-1444.441  iters=200  seed=366642658
+    restart 3/3: logLik=-1440.549  iters=200  seed=366642659
+    rep 5/5: NRMSE=0.043  NSE=0.811 (max=0.833)  BIC=3004.143  logLik=-1440.549  lag_err=0.003
+      kernel params: delta MSE=0.0202 MAE=0.1175 | sigma_k MSE=0.0138 MAE=0.0858 | beta MSE=0.0001 MAE=0.0059
+      covariance: sigma_sq MSE=0.2918 MAE=0.5402 | phi MSE=2.6614 MAE=1.6314 | tau_sq MSE=0.0002 MAE=0.0129
+  ✓ Cell complete in 280.0s
+
+NSE plot saved to: /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_simulation_recovery/output/recovery_nse_by_k.png
+NRMSE heatmap saved to: /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_simulation_recovery/output/recovery_nrmse_heatmap.png
+Parameter recovery plot saved to: /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_simulation_recovery/output/recovery_parameter_heatmaps.png
+
+====================================================================================================
+SIMULATION RECOVERY GRID COMPLETE
+====================================================================================================
+
+n=3,652 obs | 12 cells | 5 reps each | 3 restarts per fit
+
+  K    Tier    SNR        NRMSE        NSE   NSE_max    LagErr
+------------------------------------------------------------------------
+  1     low  100.0       0.0014     0.9899    0.9901    0.0001
+  1  medium   20.0       0.0059     0.9574    0.9524    0.0001
+  1    high    5.0       0.0034     0.8478    0.8333    0.0001
+  2     low  100.0       0.0021     0.9878    0.9901    0.0002
+  2  medium   20.0       0.0075     0.9489    0.9524    0.0009
+  2    high    5.0       0.0108     0.8343    0.8333    0.0013
+  3     low  100.0       0.0195     0.9886    0.9901    0.0016
+  3  medium   20.0       0.0318     0.9533    0.9524    0.0019
+  3    high    5.0       0.0498     0.8090    0.8333    0.0020
+  4     low  100.0       0.2357     0.9342    0.9901    0.2056
+  4  medium   20.0       0.0878     0.9428    0.9524    0.0043
+  4    high    5.0       0.0599     0.8108    0.8333    0.0064
