@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Par Pishrobat">
+<meta name="dcterms.date" content="2026-03-01">
+
+<title>Gaussian Process Kernel Regression for Hydrological Modeling</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="final_paper_files/libs/clipboard/clipboard.min.js"></script>
+<script src="final_paper_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="final_paper_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="final_paper_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="final_paper_files/libs/quarto-html/popper.min.js"></script>
+<script src="final_paper_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="final_paper_files/libs/quarto-html/anchor.min.js"></script>
+<link href="final_paper_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="final_paper_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="final_paper_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="final_paper_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="final_paper_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="final_paper.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Gaussian Process Kernel Regression for Hydrological Modeling</h1>
+<p class="subtitle lead">A Temporal Adaptation of the NN-GLS Framework</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Par Pishrobat </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 1, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>Hydrological time series forecasting underpins water resource planning, flood and drought preparedness, and scientific inference about watershed dynamics. In rainfall-runoff modeling, streamflow is the combined effect of several latent subprocesses (overland flow, baseflow), each responding to rainfall on its own delay scale. The Sliding Window Regression (SWR) model captures this structure by representing each subprocess through a kernelized lag profile and combining the resulting predictors linearly, producing a model that is both predictive and hydrologically interpretable <span class="citation" data-cites="Schrunner2023">(<a href="#ref-Schrunner2023" role="doc-biblioref">Schrunner et al. 2023</a>)</span>.</p>
+<p>However, residuals from SWR fits often retain substantial temporal dependence. When this dependence is handled only through the Cochrane–Orcutt autoregressive correction, the boundary between hydrological signal and dependence adjustment blurs. This paper takes a different route, adapting the NN-GLS framework of Zhan and Datta <span class="citation" data-cites="ZhanDatta2024">(<a href="#ref-ZhanDatta2024" role="doc-biblioref">Zhan and Datta 2024</a>)</span> from its original geostatistical setting to the temporal domain. The central principle is to preserve the interpretable SWR mean function while replacing ad hoc residual correction with a sparse temporal Gaussian process covariance model.</p>
+<p>The separation between mean and residual dependence is the core contribution. Modeling autocorrelation in the covariance layer, rather than folding it back into the mean equation, can improve stability and probabilistic calibration without sacrificing interpretability. The remainder of the paper is organized as follows. Section 2 defines the autocorrelation problem, Section 3 introduces the geostatistical template, and Section 4 develops the temporal SWR-GP adaptation. Section 5 evaluates the method through simulation and real-data analysis, and Section 6 discusses limitations and further directions.</p>
+</section>
+<section id="autocorrelation-bottleneck-in-hydrological-modeling" class="level1">
+<h1>Autocorrelation Bottleneck in Hydrological Modeling</h1>
+<p>Let <span class="math inline">\(x_t\)</span> and <span class="math inline">\(y_t\)</span> denote rainfall and streamflow at time <span class="math inline">\(t\)</span>. In the SWR framework, each latent runoff component <span class="math inline">\(k \in \{1,\ldots,K\}\)</span> is represented by a lag kernel <span class="math inline">\(\kappa_{k,\cdot}\)</span> applied to the rainfall history, so that <span class="math display">\[
+X_t^{(k)} = \sum_{s=0}^{L} \kappa_{k,s} x_{t-s}, \qquad
+\widetilde{y}_t = \sum_{k=1}^{K} \beta_k X_t^{(k)}.
+\]</span> The mean function <span class="math inline">\(\widetilde{y}_t\)</span> therefore decomposes streamflow into a small number of delayed rainfall responses, each with its own weight and lag profile. In the Gaussian specification used here, the <span class="math inline">\(k\)</span>-th kernel is centered at lag <span class="math inline">\(\delta_k\)</span> with spread <span class="math inline">\(\sigma_k\)</span>, so the parameters retain a direct hydrological interpretation in terms of response timing and temporal dispersion.</p>
+<p>The central difficulty arises after the mean structure has been fitted. Even when SWR explains a substantial share of the rainfall-runoff signal, the residual process retains marked temporal dependence. This is expected in hydrological series: storage effects, recession dynamics, omitted state variables, and unresolved heterogeneity all generate serially correlated departures from the mean equation. Ignoring that dependence distorts uncertainty quantification and effectively attributes part of the residual persistence to the mean structure.</p>
+<p>The usual correction is to treat the fitted residuals <span class="math inline">\(\hat r_t = y_t - \hat{\widetilde y}_t\)</span> as autoregressive and to model them as <span class="math display">\[
+\hat r_t = \sum_{j=1}^{p}\phi_j \hat r_{t-j} + u_t,
+\]</span> where <span class="math inline">\(u_t\)</span> is taken to be serially uncorrelated. In this formulation, the SWR mean parameters are estimated first, and the autoregressive coefficients are then estimated from the residual series. The order <span class="math inline">\(p\)</span> is selected progressively over a bounded candidate set by requiring the fitted innovations to exhibit reduced serial dependence. The resulting one-step corrected predictor has the form <span class="math display">\[
+\hat y_t^{\mathrm{AR}} = \hat{\widetilde y}_t + \sum_{j=1}^{\hat p}\hat\phi_j\bigl(y_{t-j}-\hat{\widetilde y}_{t-j}\bigr), \qquad t&gt;\hat p,
+\]</span> with the same correction applied on the transformed scale when a response transformation is used.</p>
+<p>This procedure is effective as a residual adjustment but does not change the underlying modeling architecture. Dependence is introduced only after the mean has been fitted, and the autoregressive order is chosen by a sequential diagnostic rule. The dependence parameters are tied to the regression correction rather than to an explicit covariance model, so the mean and dependence components remain only partially separated.</p>
+</section>
+<section id="a-geostatistical-blueprint-for-modeling-error-dependence" class="level1">
+<h1>A Geostatistical Blueprint for Modeling Error Dependence</h1>
+<section id="the-spatial-gaussian-process-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-spatial-gaussian-process-model">The Spatial Gaussian Process Model</h2>
+<p>The NN-GLS framework of Zhan and Datta provides the methodological foundation by embedding flexible mean estimators within a Gaussian process covariance model for spatially referenced data. This section summarizes the key elements of that framework.</p>
+<p>Consider observations collected at spatial locations <span class="math inline">\(s_1,\ldots,s_n\)</span>. Let <span class="math inline">\(Y_i = Y(s_i)\)</span> denote the response, let <span class="math inline">\(\mathbf{X}_i = \mathbf{X}(s_i) \in \mathbb{R}^d\)</span> denote the covariate vector at location <span class="math inline">\(s_i\)</span>, and write <span class="math inline">\(\mathbf{Y} = (Y_1,\ldots,Y_n)^\top\)</span>. The data-generating process is specified as a Gaussian process with a nonlinear mean: <span id="eq-gp-model"><span class="math display">\[
+Y(s) = f(\mathbf{X}(s)) + \epsilon(s), \qquad \epsilon(\cdot) \sim \mathrm{GP}(0, \Sigma(\cdot,\cdot)),
+\tag{1}\]</span></span> so that the joint likelihood at the observed locations takes the form <span id="eq-gp-likelihood"><span class="math display">\[
+(\mathbf{Y} \mid \mathbf{X}) \sim \mathcal{N}\bigl(\mathbf{f}(\mathbf{X}),\, \boldsymbol{\Sigma}\bigr),
+\tag{2}\]</span></span> where <span class="math inline">\(\mathbf{f}(\mathbf{X}) = (f(\mathbf{X}_1),\ldots,f(\mathbf{X}_n))^\top\)</span> and <span class="math inline">\(\boldsymbol{\Sigma} = \boldsymbol{\Sigma}(\boldsymbol{\theta})\)</span> is the <span class="math inline">\(n \times n\)</span> covariance matrix parameterized by a low-dimensional vector <span class="math inline">\(\boldsymbol{\theta}\)</span>. This formulation separates the covariate effect (modeled through <span class="math inline">\(f\)</span>) from the spatial dependence (modeled through <span class="math inline">\(\boldsymbol{\Sigma}\)</span>). The separation allows the mean to be estimated without conflating signal with spatial structure, and it enables kriging at new locations without sacrificing interpretability.</p>
+</section>
+<section id="generalized-least-squares-and-decorrelation" class="level2">
+<h2 class="anchored" data-anchor-id="generalized-least-squares-and-decorrelation">Generalized Least Squares and Decorrelation</h2>
+<p>When the error process is spatially correlated, estimating <span class="math inline">\(f\)</span> by minimizing the ordinary least squares (OLS) loss <span class="math inline">\(\sum_i (Y_i - f(\mathbf{X}_i))^2\)</span> ignores the dependence and leads to inefficient estimates. Zhan and Datta instead propose minimizing the generalized least squares (GLS) loss <span id="eq-gls-loss"><span class="math display">\[
+\mathcal{L}_{\mathrm{GLS}}(f) = \frac{1}{n}\bigl(\mathbf{Y} - \mathbf{f}(\mathbf{X})\bigr)^\top \mathbf{Q} \bigl(\mathbf{Y} - \mathbf{f}(\mathbf{X})\bigr),
+\tag{3}\]</span></span> where <span class="math inline">\(\mathbf{Q}\)</span> is a working precision matrix, ideally equal to <span class="math inline">\(\boldsymbol{\Sigma}^{-1}\)</span>. When <span class="math inline">\(\mathbf{Q} = \boldsymbol{\Sigma}^{-1}\)</span>, minimizing <a href="#eq-gls-loss" class="quarto-xref">Equation&nbsp;3</a> is equivalent to maximum likelihood estimation of <span class="math inline">\(f\)</span> under the Gaussian process model <a href="#eq-gp-likelihood" class="quarto-xref">Equation&nbsp;2</a>.</p>
+<p>A central observation is that any GLS loss admits an equivalent OLS representation on decorrelated data. Let <span class="math inline">\(\mathbf{Q} = \mathbf{A}^\top\mathbf{A}\)</span>, where <span class="math inline">\(\mathbf{A} = \mathbf{Q}^{1/2}\)</span>, denote a Cholesky factorization of the precision. Defining <span class="math inline">\(\mathbf{Y}^* = \mathbf{Q}^{1/2}\mathbf{Y}\)</span> and <span class="math inline">\(\mathbf{f}^*(\mathbf{X}) = \mathbf{Q}^{1/2}\mathbf{f}(\mathbf{X})\)</span>, the GLS loss becomes <span id="eq-gls-decorrelated"><span class="math display">\[
+\mathcal{L}_{\mathrm{GLS}}(f) = \frac{1}{n}\bigl(\mathbf{Y}^* - \mathbf{f}^*(\mathbf{X})\bigr)^\top \bigl(\mathbf{Y}^* - \mathbf{f}^*(\mathbf{X})\bigr).
+\tag{4}\]</span></span> This reformulation reduces the estimation problem to OLS on transformed data while retaining the efficiency of GLS.</p>
+</section>
+<section id="nearest-neighbor-gaussian-process-approximation" class="level2">
+<h2 class="anchored" data-anchor-id="nearest-neighbor-gaussian-process-approximation">Nearest-Neighbor Gaussian Process Approximation</h2>
+<p>Full Gaussian process inference requires <span class="math inline">\(O(n^3)\)</span> time and <span class="math inline">\(O(n^2)\)</span> storage for the dense covariance operations, rendering it infeasible for even moderately large datasets. To restore scalability, Zhan and Datta employ the Nearest-Neighbor Gaussian Process (NNGP) approximation <span class="citation" data-cites="Datta2016">(<a href="#ref-Datta2016" role="doc-biblioref">Datta et al. 2016</a>)</span>, which replaces the dense precision matrix with a sparse conditional factorization.</p>
+<p>The construction proceeds as follows. Given a directed acyclic graph (DAG) over the <span class="math inline">\(n\)</span> locations, let <span class="math inline">\(N(i)\)</span> denote the neighbor set of location <span class="math inline">\(s_i\)</span>, with <span class="math inline">\(|N(i)| \leq m \ll n\)</span>. For each index <span class="math inline">\(i\)</span>, the conditional distribution of <span class="math inline">\(Y_i\)</span> given its neighbors <span class="math inline">\(\mathbf{Y}_{N(i)}\)</span> under the full GP yields the kriging coefficients <span id="eq-nngp-b"><span class="math display">\[
+\mathbf{b}_i = \boldsymbol{\Sigma}_{N(i),N(i)}^{-1} \boldsymbol{\Sigma}_{N(i),i},
+\tag{5}\]</span></span> and the conditional variance <span id="eq-nngp-F"><span class="math display">\[
+F_i = \boldsymbol{\Sigma}_{ii} - \boldsymbol{\Sigma}_{i,N(i)} \mathbf{b}_i.
+\tag{6}\]</span></span> Collecting the vectors <span class="math inline">\(\mathbf{b}_i\)</span> into a sparse lower-triangular matrix <span class="math inline">\(\mathbf{B}\)</span> (with <span class="math inline">\(B_{i,N(i)} = \mathbf{b}_i^\top\)</span> and zero elsewhere) and the scalars <span class="math inline">\(F_i\)</span> into the diagonal matrix <span class="math inline">\(\mathbf{F} = \operatorname{diag}(F_1,\ldots,F_n)\)</span>, the NNGP working precision takes the form <span id="eq-nngp-precision"><span class="math display">\[
+\mathbf{Q} = \widetilde{\boldsymbol{\Sigma}}^{-1} = (\mathbf{I} - \mathbf{B})^\top \mathbf{F}^{-1} (\mathbf{I} - \mathbf{B}).
+\tag{7}\]</span></span> Crucially, this precision matrix is never formed or stored as a dense <span class="math inline">\(n \times n\)</span> object. Each row of <span class="math inline">\(\mathbf{B}\)</span> has at most <span class="math inline">\(m\)</span> nonzero entries, and <span class="math inline">\(\mathbf{F}\)</span> is diagonal, so the construction requires only <span class="math inline">\(n\)</span> local solves of dimension <span class="math inline">\(m \times m\)</span>, yielding <span class="math inline">\(O(nm^3)\)</span> total cost. The decorrelation map is sequential: for each unit <span class="math inline">\(i\)</span>, <span id="eq-nngp-decorrelate"><span class="math display">\[
+Y_i^* = F_i^{-1/2}\bigl(Y_i - \mathbf{b}_i^\top \mathbf{Y}_{N(i)}\bigr),
+\tag{8}\]</span></span> which requires <span class="math inline">\(O(nm)\)</span> total work. Sparsity thus enters through local conditional structure rather than through truncation of a dense covariance.</p>
+</section>
+<section id="neural-network-means-under-gls-the-nn-gls-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="neural-network-means-under-gls-the-nn-gls-algorithm">Neural Network Means under GLS: the NN-GLS Algorithm</h2>
+<p>A distinctive feature of the Zhan and Datta framework is that the mean function <span class="math inline">\(f\)</span> in <a href="#eq-gp-model" class="quarto-xref">Equation&nbsp;1</a> need not be restricted to a linear form. They propose modeling <span class="math inline">\(f\)</span> with a feed-forward neural network (multi-layer perceptron) and estimating its parameters by minimizing the GLS loss <a href="#eq-gls-loss" class="quarto-xref">Equation&nbsp;3</a> rather than the standard OLS loss. This yields NN-GLS: a neural network whose training accounts for spatial dependence through the GP covariance.</p>
+<p>Concretely, an <span class="math inline">\(L\)</span>-layer MLP maps the input <span class="math inline">\(\mathbf{X}_i\)</span> through successive hidden layers with weight matrices <span class="math inline">\(\mathbf{W}_{(l)}\)</span> and nonlinear activation functions <span class="math inline">\(g_l(\cdot)\)</span> to produce the output <span class="math inline">\(O_i = f(\mathbf{X}_i)\)</span>. In standard (non-spatial) neural network regression, the weights are estimated by backpropagation on the OLS loss <span class="math inline">\(\sum_i (Y_i - O_i)^2\)</span>. NN-GLS instead minimizes the GLS loss with the NNGP precision, which, by the decorrelation equivalence <a href="#eq-gls-decorrelated" class="quarto-xref">Equation&nbsp;4</a>, reduces to <span id="eq-nngls-loss"><span class="math display">\[
+\mathcal{L}_{\mathrm{GLS}}(f) = \sum_{i=1}^{n} \bigl(Y_i^* - O_i^*\bigr)^2,
+\tag{9}\]</span></span> where <span class="math inline">\(Y_i^* = \mathbf{v}_i^\top \mathbf{Y}_{N^*[i]}\)</span> and <span class="math inline">\(O_i^* = \mathbf{v}_i^\top \mathbf{O}_{N^*[i]}\)</span> are decorrelated responses and outputs, respectively, <span class="math inline">\(N^*[i] = \{i\} \cup N(i)\)</span> is the inclusive neighborhood, and the graph convolution weights are <span id="eq-graph-weights"><span class="math display">\[
+\mathbf{v}_i^\top = F_i^{-1/2}\bigl(1, -\mathbf{b}_i^\top\bigr).
+\tag{10}\]</span></span> This representation reveals NN-GLS as a graph neural network (GNN) on the nearest-neighbor DAG. The feed-forward MLP maps covariates to a predicted mean at each node, and two graph-convolution layers decorrelate both output and response using kriging weights before OLS comparison <span class="citation" data-cites="ZhanDatta2024">(<a href="#ref-ZhanDatta2024" role="doc-biblioref">Zhan and Datta 2024</a>)</span>. Because the NNGP factors <a href="#eq-nngp-b" class="quarto-xref">Equation&nbsp;5</a>–<a href="#eq-nngp-F" class="quarto-xref">Equation&nbsp;6</a> involve only <span class="math inline">\(m \times m\)</span> local solves, the loss <a href="#eq-nngls-loss" class="quarto-xref">Equation&nbsp;9</a> decomposes into a sum over data units, admits mini-batching, and supports standard backpropagation. The covariance parameters <span class="math inline">\(\boldsymbol{\theta}\)</span> enter through the graph-convolution weights <a href="#eq-graph-weights" class="quarto-xref">Equation&nbsp;10</a> and are updated periodically by maximizing the NNGP log-likelihood <span id="eq-nngp-loglik"><span class="math display">\[
+\ell(\boldsymbol{\theta}) = -\tfrac{1}{2}\sum_{i=1}^{n}\Bigl[\bigl(Y_i^*(\boldsymbol{\theta}) - O_i^*(\boldsymbol{\theta})\bigr)^2 + \log F_i(\boldsymbol{\theta})\Bigr],
+\tag{11}\]</span></span> alternating with gradient-descent updates of the network weights.</p>
+</section>
+<section id="kriging-predictions" class="level2">
+<h2 class="anchored" data-anchor-id="kriging-predictions">Kriging Predictions</h2>
+<p>Because NN-GLS retains the Gaussian process model structure, predictions at new locations follow directly from kriging. Given a new location <span class="math inline">\(s_0\)</span> with covariates <span class="math inline">\(\mathbf{X}_0\)</span>, the MLP first produces the mean prediction <span class="math inline">\(\hat{f}(\mathbf{X}_0)\)</span>. The location <span class="math inline">\(s_0\)</span> is then added to the NNGP DAG with neighbor set <span class="math inline">\(N(0)\)</span>, and the kriging predictor is <span id="eq-kriging"><span class="math display">\[
+\hat{Y}_0 = \hat{f}(\mathbf{X}_0) + \boldsymbol{\Sigma}(s_0, N(0))\,\boldsymbol{\Sigma}(N(0), N(0))^{-1}\bigl(\mathbf{Y}_{N(0)} - \hat{\mathbf{f}}_{N(0)}\bigr),
+\tag{12}\]</span></span> with associated conditional variance <span class="math inline">\(\sigma_0^2 = F_{00}\)</span>. The kriging correction adds a residual adjustment based on observed departures at nearby locations, improving point predictions and providing a principled basis for prediction intervals. In the GNN representation, this amounts to deconvolving the decorrelated prediction layer over the DAG, so that kriging is performed entirely within the neural architecture.</p>
+</section>
+<section id="theoretical-guarantees" class="level2">
+<h2 class="anchored" data-anchor-id="theoretical-guarantees">Theoretical Guarantees</h2>
+<p>Zhan and Datta provide the first large-sample theoretical results for neural network estimators under spatially correlated errors from an irregular set of locations. Their main contributions are:</p>
+<ol type="1">
+<li><p><strong>Existence</strong> (Theorem 1 of <span class="citation" data-cites="ZhanDatta2024">(<a href="#ref-ZhanDatta2024" role="doc-biblioref">Zhan and Datta 2024</a>)</span>). Under assumptions on the boundedness of the covariance eigenvalues and the sieve construction of the function class, a minimizer of the GLS loss over the neural network sieve exists.</p></li>
+<li><p><strong>Consistency</strong> (Theorem 2 of <span class="citation" data-cites="ZhanDatta2024">(<a href="#ref-ZhanDatta2024" role="doc-biblioref">Zhan and Datta 2024</a>)</span>). Under additionally the scaling condition on the sieve complexity, the NN-GLS estimator <span class="math inline">\(\hat{f}_n\)</span> satisfies <span class="math inline">\(\|\hat{f}_n - f_0\|_n^2 \xrightarrow{p} 0\)</span>, where <span class="math inline">\(\|g\|_n^2 = n^{-1}\sum_i g^2(\mathbf{X}_i)\)</span>. The result holds for any continuous mean function <span class="math inline">\(f_0\)</span> and accommodates irregularly observed locations in <span class="math inline">\(\mathbb{R}^2\)</span> under increasing-domain asymptotics.</p></li>
+<li><p><strong>Finite-sample error rate</strong> (Theorem 3 of <span class="citation" data-cites="ZhanDatta2024">(<a href="#ref-ZhanDatta2024" role="doc-biblioref">Zhan and Datta 2024</a>)</span>). The estimation error depends on the spectral interval of the discrepancy matrix <span class="math inline">\(\mathbf{E} = \boldsymbol{\Sigma}^{1/2}\mathbf{Q}\boldsymbol{\Sigma}^{1/2}\)</span>. When <span class="math inline">\(\mathbf{Q}\)</span> approximates <span class="math inline">\(\boldsymbol{\Sigma}^{-1}\)</span> well, <span class="math inline">\(\mathbf{E}\)</span> is close to the identity and the error rate is near-optimal. This result directly motivates accurate covariance modeling: ignoring spatial dependence (using OLS, i.e., <span class="math inline">\(\mathbf{Q} = \mathbf{I}\)</span>) inflates the spectral interval and leads to larger estimation error.</p></li>
+</ol>
+<p>These results justify NNGP-based GLS as a principled statistical procedure: the sparse precision approximation provides the asymptotic bridge between dense GP theory and scalable estimation, and the finite-sample bound quantifies the cost of covariance misspecification.</p>
+</section>
+</section>
+<section id="temporal-swr-gp-model-specification-and-estimation" class="level1">
+<h1>Temporal SWR-GP: Model Specification and Estimation</h1>
+<section id="model-formulation" class="level2">
+<h2 class="anchored" data-anchor-id="model-formulation">Model Formulation</h2>
+<p>Let <span class="math inline">\(y_t\)</span> denote streamflow at time <span class="math inline">\(t \in \{1,\ldots,n\}\)</span>, let <span class="math inline">\(x_t\)</span> denote rainfall, and let <span class="math inline">\(X_t^{(1)},\ldots,X_t^{(K)}\)</span> denote the kernelized rainfall predictors defined in Section 2. Writing <span class="math inline">\(\boldsymbol{\beta} = (\beta_1,\ldots,\beta_K)^\top\)</span> and <span class="math inline">\(\widetilde{y}_t = \sum_{k=1}^{K}\beta_k X_t^{(k)}\)</span>, the temporal model is <span id="eq-temporal-model"><span class="math display">\[
+y_t = \widetilde{y}_t + \epsilon_t, \qquad \boldsymbol{\epsilon} = (\epsilon_1,\ldots,\epsilon_n)^\top \sim \mathcal{N}(\mathbf{0},\, \boldsymbol{\Sigma}(\boldsymbol{\theta})),
+\tag{13}\]</span></span> where the mean function is the SWR linear predictor from Section 2 and the residual process is a zero-mean Gaussian process with temporal covariance <span class="math inline">\(\boldsymbol{\Sigma}(\boldsymbol{\theta})\)</span>. The mean is linear in <span class="math inline">\(\boldsymbol{\beta}\)</span> for fixed kernel-shape parameters, a property exploited in the estimation procedure below.</p>
+</section>
+<section id="temporal-matérn-covariance" class="level2">
+<h2 class="anchored" data-anchor-id="temporal-matérn-covariance">Temporal Matérn Covariance</h2>
+<p>Residual dependence is modeled by a stationary Mat'{e}rn covariance <span class="citation" data-cites="Matern1960">(<a href="#ref-Matern1960" role="doc-biblioref">Matérn 1960</a>)</span> with nugget: <span id="eq-matern"><span class="math display">\[
+\Sigma_{tt'} = \sigma^2\, M_\nu\!\left(\frac{|t - t'|}{\phi}\right) + \tau^2 \mathbf{1}_{t = t'},
+\tag{14}\]</span></span> where <span class="math inline">\(\boldsymbol{\theta} = (\sigma^2, \phi, \nu, \tau^2)\)</span>: <span class="math inline">\(\sigma^2\)</span> is the signal variance, <span class="math inline">\(\phi\)</span> the temporal range controlling decorrelation rate, <span class="math inline">\(\nu\)</span> the smoothness, and <span class="math inline">\(\tau^2\)</span> the nugget variance (measurement noise or unresolved microscale variability). The Matérn function <span class="math inline">\(M_\nu(h)\)</span> has closed-form expressions for half-integer <span class="math inline">\(\nu\)</span>; in the present implementation, <span class="math inline">\(\nu\)</span> is fixed at <span class="math inline">\(1.5\)</span>, yielding <span id="eq-matern-15"><span class="math display">\[
+M_{3/2}(h) = \left(1 + \frac{\sqrt{3}\, h}{\phi}\right)\exp\!\left(-\frac{\sqrt{3}\, h}{\phi}\right).
+\tag{15}\]</span></span> This choice provides a once-differentiable process, keeping the number of free covariance parameters at three (<span class="math inline">\(\sigma^2\)</span>, <span class="math inline">\(\phi\)</span>, <span class="math inline">\(\tau^2\)</span>). The original NN-GLS framework fixes the exponential covariance (<span class="math inline">\(\nu = 0.5\)</span>), which is standard for rough spatial fields. In the temporal setting, <span class="math inline">\(\nu = 1.5\)</span> is more appropriate: daily streamflow residuals reflect aggregated storage and recession dynamics that are physically smooth on a daily timescale, unlike the nowhere-differentiable sample paths implied by <span class="math inline">\(\nu = 0.5\)</span>. Estimating <span class="math inline">\(\nu\)</span> continuously would require evaluating the modified Bessel function inside the NNGP inner loop, at substantial computational cost, while providing limited benefit given that the likelihood is dominated by the range and variance ratio. A discrete comparison over <span class="math inline">\(\nu \in \{0.5, 1.5, 2.5\}\)</span> could test sensitivity, but is not pursued here.</p>
+</section>
+<section id="temporal-nngp-construction" class="level2">
+<h2 class="anchored" data-anchor-id="temporal-nngp-construction">Temporal NNGP Construction</h2>
+<p>Scalable inference uses an ordered-neighbor NNGP approximation that exploits the natural temporal ordering. For each time index <span class="math inline">\(t\)</span>, the neighbor set consists of the <span class="math inline">\(m\)</span> most recent predecessors: <span id="eq-temporal-neighbors"><span class="math display">\[
+N(t) = \{t-1,\, t-2,\, \ldots,\, t - \min(t, m)\}.
+\tag{16}\]</span></span> This is the temporal analogue of the spatial nearest-neighbor DAG, with two simplifying properties: the DAG ordering is given by time itself (no arbitrary ordering is needed), and the neighbor set is deterministic given <span class="math inline">\(m\)</span>. For each <span class="math inline">\(t\)</span>, the kriging coefficients and conditional variance are computed as in <a href="#eq-nngp-b" class="quarto-xref">Equation&nbsp;5</a>–<a href="#eq-nngp-F" class="quarto-xref">Equation&nbsp;6</a>: <span id="eq-temporal-bt-ft"><span class="math display">\[
+\mathbf{b}_t = \boldsymbol{\Sigma}_{N(t),N(t)}^{-1}\,\boldsymbol{\Sigma}_{N(t),t}, \qquad F_t = \boldsymbol{\Sigma}_{tt} - \boldsymbol{\Sigma}_{t,N(t)}\,\mathbf{b}_t,
+\tag{17}\]</span></span> where <span class="math inline">\(\boldsymbol{\Sigma}_{N(t),N(t)}\)</span> is the <span class="math inline">\(|N(t)| \times |N(t)|\)</span> submatrix of pairwise Matérn covariances among the neighbors (including nugget on the diagonal), and <span class="math inline">\(\boldsymbol{\Sigma}_{N(t),t}\)</span> is the cross-covariance vector. These are assembled into the sparse matrices <span class="math inline">\(\mathbf{B}\)</span> and <span class="math inline">\(\mathbf{F}\)</span> as in <a href="#eq-nngp-precision" class="quarto-xref">Equation&nbsp;7</a>; <span class="math inline">\(\mathbf{F}\)</span> is stored as a length-<span class="math inline">\(n\)</span> vector.</p>
+<p>The decorrelated response and design matrix are then <span id="eq-temporal-decorrelate"><span class="math display">\[
+y_t^* = F_t^{-1/2}\Bigl(y_t - \sum_{j \in N(t)} B_{t,j}\, y_j\Bigr), \qquad
+X_t^{(k)*} = F_t^{-1/2}\Bigl(X_t^{(k)} - \sum_{j \in N(t)} B_{t,j}\, X_j^{(k)}\Bigr),
+\tag{18}\]</span></span> for <span class="math inline">\(k = 1,\ldots,K\)</span>. The entire NNGP construction requires <span class="math inline">\(O(nm^3)\)</span> work (dominated by the <span class="math inline">\(n\)</span> Cholesky solves of dimension at most <span class="math inline">\(m\)</span>), and the decorrelation map requires <span class="math inline">\(O(nmK)\)</span> work.</p>
+</section>
+<section id="gls-estimation-of-mean-coefficients" class="level2">
+<h2 class="anchored" data-anchor-id="gls-estimation-of-mean-coefficients">GLS Estimation of Mean Coefficients</h2>
+<p>For fixed kernel-shape parameters <span class="math inline">\(\boldsymbol{\eta}\)</span> and covariance parameters <span class="math inline">\(\boldsymbol{\theta}\)</span>, the mean is linear in <span class="math inline">\(\boldsymbol{\beta}\)</span>. Writing <span class="math inline">\(\mathbf{X} = \mathbf{X}(\boldsymbol{\eta})\)</span> for the <span class="math inline">\(n \times K\)</span> design matrix and <span class="math inline">\(\mathbf{X}^*\)</span>, <span class="math inline">\(\mathbf{y}^*\)</span> for their decorrelated counterparts, the GLS estimator reduces to ordinary least squares on the whitened data: <span id="eq-gls-beta"><span class="math display">\[
+\hat{\boldsymbol{\beta}} = (\mathbf{X}^{*\top}\mathbf{X}^*)^{-1}\mathbf{X}^{*\top}\mathbf{y}^*.
+\tag{19}\]</span></span> This is equivalent to <span class="math inline">\(\hat{\boldsymbol{\beta}} = (\mathbf{X}^\top \mathbf{Q}\,\mathbf{X})^{-1}\mathbf{X}^\top \mathbf{Q}\,\mathbf{y}\)</span> with <span class="math inline">\(\mathbf{Q} = \widetilde{\boldsymbol{\Sigma}}^{-1}\)</span>, but the whitened form is computationally preferable because neither <span class="math inline">\(\mathbf{Q}\)</span> nor <span class="math inline">\(\boldsymbol{\Sigma}\)</span> need to be formed explicitly. The closed-form solution for <span class="math inline">\(\boldsymbol{\beta}\)</span> means that only the <span class="math inline">\(2K + 3\)</span> nonlinear parameters <span class="math inline">\((\boldsymbol{\eta}, \boldsymbol{\theta})\)</span> require iterative optimization.</p>
+</section>
+<section id="nonlinear-optimization" class="level2">
+<h2 class="anchored" data-anchor-id="nonlinear-optimization">Nonlinear Optimization</h2>
+<p>The full parameter vector consists of <span class="math inline">\(2K\)</span> kernel-shape parameters (two per kernel: <span class="math inline">\(\log\delta_k\)</span> and <span class="math inline">\(\log\sigma_k\)</span>) and three covariance parameters (<span class="math inline">\(\log\sigma^2\)</span>, <span class="math inline">\(\log\phi\)</span>, <span class="math inline">\(\log\tau^2\)</span>), all on unconstrained log scales with bounded search regions. The objective is the negative GLS log-likelihood: <span id="eq-neg-log-lik"><span class="math display">\[
+-\ell(\boldsymbol{\eta}, \boldsymbol{\theta}) = -\left[-\frac{n}{2}\log(2\pi) - \frac{1}{2}\sum_{t=1}^{n}\log F_t - \frac{1}{2}\sum_{t=1}^{n}(y_t^* - \hat{y}_t^*)^2\right],
+\tag{20}\]</span></span> where <span class="math inline">\(\hat{y}_t^*\)</span> is the decorrelated predicted mean. For each candidate <span class="math inline">\((\boldsymbol{\eta}, \boldsymbol{\theta})\)</span>, the objective is evaluated by:</p>
+<ol type="1">
+<li>Building the design matrix <span class="math inline">\(\mathbf{X}(\boldsymbol{\eta})\)</span> via kernel convolution.</li>
+<li>Constructing the NNGP factors <span class="math inline">\(\mathbf{B}(\boldsymbol{\theta})\)</span> and <span class="math inline">\(\mathbf{F}(\boldsymbol{\theta})\)</span>.</li>
+<li>Decorrelating <span class="math inline">\(\mathbf{y}\)</span> and <span class="math inline">\(\mathbf{X}\)</span> to obtain <span class="math inline">\(\mathbf{y}^*\)</span> and <span class="math inline">\(\mathbf{X}^*\)</span>.</li>
+<li>Solving for <span class="math inline">\(\hat{\boldsymbol{\beta}}\)</span> via <a href="#eq-gls-beta" class="quarto-xref">Equation&nbsp;19</a> and computing the residual sum of squares in the whitened space.</li>
+</ol>
+<p>The optimizer is CMA-ES <span class="citation" data-cites="Hansen2003">(<a href="#ref-Hansen2003" role="doc-biblioref">Hansen and Ostermeier 2003</a>)</span>, a derivative-free global search algorithm suited to the moderate dimensionality and multimodal geometry of the kernel/covariance parameter space. The optimization proceeds over the full <span class="math inline">\((\boldsymbol{\eta}, \boldsymbol{\theta})\)</span> vector jointly, with <span class="math inline">\(\boldsymbol{\beta}\)</span> profiled out at each evaluation. After convergence, the final <span class="math inline">\(\hat{\boldsymbol{\beta}}\)</span> is obtained by GLS at the optimized <span class="math inline">\((\hat{\boldsymbol{\eta}}, \hat{\boldsymbol{\theta}})\)</span>.</p>
+</section>
+<section id="prediction-and-kriging" class="level2">
+<h2 class="anchored" data-anchor-id="prediction-and-kriging">Prediction and Kriging</h2>
+<p>Three prediction modes are available, corresponding to increasing use of temporal context:</p>
+<p><em>Simulation (mean prediction).</em> Given rainfall <span class="math inline">\(x_1,\ldots,x_n\)</span>, the design matrix is constructed from the fitted kernel parameters and the point prediction is <span class="math inline">\(\hat{y}_t = \mathbf{X}_t \hat{\boldsymbol{\beta}}\)</span>. When a Box-Cox response transformation is used, the back-transformed point prediction is the conditional median <span class="math inline">\(\exp(\hat{\mu}_t) - \epsilon_0\)</span>, where <span class="math inline">\(\epsilon_0\)</span> is the shift constant applied before transformation to ensure positivity. The conditional median is used rather than the lognormal mean <span class="math inline">\(\exp(\hat{\mu}_t + \hat{\sigma}_t^2/2)\)</span> to avoid systematic positive bias.</p>
+<p><em>History-aware simulation.</em> For out-of-sample prediction, the test rainfall is concatenated with the training rainfall before convolution, ensuring that the lagged kernel structure has access to the full rainfall history at the train–test boundary. The test segment is then sliced from the concatenated predictions.</p>
+<p><em>Kriging (conditional mean correction).</em> Kriging exploits the estimated NNGP structure to correct the simulation prediction using observed residuals at neighboring time points: <span id="eq-kriging-temporal"><span class="math display">\[
+\hat{y}_t^{\mathrm{krig}} = \hat{\mu}_t + \sum_{j \in N(t)} B_{t,j}\, \epsilon_j, \qquad \epsilon_j = y_j - \hat{\mu}_j,
+\tag{21}\]</span></span> where <span class="math inline">\(\hat{\mu}_t\)</span> is the mean prediction on the (possibly transformed) scale. This is the temporal analogue of <a href="#eq-kriging" class="quarto-xref">Equation&nbsp;12</a>: the kriging coefficients <span class="math inline">\(\mathbf{b}_t\)</span> from the NNGP provide an optimal linear correction for the residual at time <span class="math inline">\(t\)</span> based on observed residuals at its <span class="math inline">\(m\)</span> nearest predecessors. The conditional kriging variance is <span class="math inline">\(F_t\)</span>, the diagonal element of the NNGP conditional variance matrix, which provides the basis for prediction intervals.</p>
+</section>
+<section id="neural-network-comparator-nn-gp" class="level2">
+<h2 class="anchored" data-anchor-id="neural-network-comparator-nn-gp">Neural Network Comparator: NN-GP</h2>
+<p>To assess whether the SWR mean adequately captures the rainfall-streamflow relationship, the same GP covariance framework is paired with a neural network mean function, yielding a temporal adaptation of the NN-GLS algorithm from Section 3.</p>
+<p>The input to the neural network at each time step is a lag vector <span class="math inline">\(\mathbf{z}_t = (x_t, x_{t-1}, \ldots, x_{t-L+1})^\top\)</span> of dimension <span class="math inline">\(L\)</span> (the lag window), where <span class="math inline">\(L\)</span> plays the role of the maximum lag. The mean function is a two-hidden-layer MLP: <span id="eq-nn-mean"><span class="math display">\[
+f_{\mathrm{NN}}(\mathbf{z}_t) = \mathbf{w}_3^\top\, g\bigl(\mathbf{W}_2\, g(\mathbf{W}_1 \mathbf{z}_t)\bigr),
+\tag{22}\]</span></span> where <span class="math inline">\(g(\cdot) = \mathrm{ReLU}(\cdot)\)</span> is applied elementwise and <span class="math inline">\(\mathbf{W}_1, \mathbf{W}_2, \mathbf{w}_3\)</span> are trainable weight matrices. The hidden dimension is a tunable capacity parameter.</p>
+<p>Training follows the iterative NN-GLS scheme. At each GLS iteration:</p>
+<ol type="1">
+<li>The NNGP matrices <span class="math inline">\(\mathbf{B}(\boldsymbol{\theta})\)</span> and <span class="math inline">\(\mathbf{F}(\boldsymbol{\theta})\)</span> are rebuilt from the current covariance estimate.</li>
+<li>The MLP is trained for a fixed budget of epochs by backpropagation on the decorrelated GLS loss: <span id="eq-nn-gls-loss"><span class="math display">\[
+\mathcal{L} = \frac{1}{n}\sum_{t=1}^{n}\left[F_t^{-1/2}\Bigl(y_t - f_{\mathrm{NN}}(\mathbf{z}_t) - \sum_{j \in N(t)} B_{t,j}\bigl(y_j - f_{\mathrm{NN}}(\mathbf{z}_j)\bigr)\Bigr)\right]^2.
+\tag{23}\]</span></span></li>
+<li>The covariance parameters <span class="math inline">\(\boldsymbol{\theta}\)</span> are re-estimated from the updated residuals by NNGP marginal log-likelihood (MLE).</li>
+</ol>
+<p>The total epoch budget is divided evenly across GLS iterations to maintain a fixed compute envelope. Gradient clipping, early stopping, and <span class="math inline">\(L_2\)</span> regularization stabilize training, particularly under transformed responses where the decorrelated loss surface becomes ill-conditioned.</p>
+<p>The NN-GP model serves a diagnostic role. If it substantially outperforms the SWR mean in held-out metrics, nonlinear rainfall-to-streamflow dynamics are present that the kernel convolution cannot capture. If SWR performs comparably, the linear structure is adequate and the more interpretable specification is preferred. Both models share the same GP covariance and NNGP machinery, so the comparison isolates mean-function flexibility.</p>
+</section>
+<section id="model-selection-and-information-criteria" class="level2">
+<h2 class="anchored" data-anchor-id="model-selection-and-information-criteria">Model Selection and Information Criteria</h2>
+<p>Within each model family, the number of kernels <span class="math inline">\(K\)</span> (or NN capacity) is selected using an effective Bayesian information criterion that accounts for residual autocorrelation: <span id="eq-bic-eff"><span class="math display">\[
+\mathrm{BIC}_{\mathrm{eff}} = -2\,\ell + p\,\log(n_{\mathrm{eff}}),
+\tag{24}\]</span></span> where <span class="math inline">\(\ell\)</span> is the GLS log-likelihood, <span class="math inline">\(p\)</span> is the effective number of parameters (<span class="math inline">\(3K + 3\)</span> for SWR-GP, or the total network parameter count plus three covariance parameters for NN-GP), and <span class="math inline">\(n_{\mathrm{eff}}\)</span> is the effective sample size estimated from the residual autocorrelation structure. For NN-GP, within-model capacity selection uses held-out training-tail kriging CRPS to avoid information-criterion instability in overparameterized settings. Between-model comparison uses test kriging CRPS.</p>
+</section>
+<section id="theoretical-basis" class="level2">
+<h2 class="anchored" data-anchor-id="theoretical-basis">Theoretical Basis</h2>
+<p>The theoretical requirements for the temporal adaptation are the direct analogues of the spatial conditions in Section 3. Full column rank of <span class="math inline">\(\mathbf{X}(\boldsymbol{\eta})\)</span> and positive definiteness of <span class="math inline">\(\boldsymbol{\Sigma}(\boldsymbol{\theta})\)</span> ensure identifiability of <span class="math inline">\(\boldsymbol{\beta}\)</span> for fixed <span class="math inline">\((\boldsymbol{\eta}, \boldsymbol{\theta})\)</span>. The ordered-neighbor precision converges uniformly to the exact GP precision, following from the decay properties of the Matérn covariance, which implies asymptotic equivalence between the approximate and full GLS criteria. The finite-sample error rate for the NN comparator inherits the spectral-interval dependence on the discrepancy matrix from the Zhan and Datta framework. Formal statements and proofs are in the Appendix.</p>
+</section>
+</section>
+<section id="empirical-validation" class="level1">
+<h1>Empirical Validation</h1>
+<p>This section evaluates the temporal SWR-GP framework through three studies: a simulation experiment verifying parameter recovery under controlled conditions, a real-data benchmark on the Big Sur daily hydrological series, and calibration diagnostics assessing predictive distribution quality.</p>
+<section id="data-and-experimental-design" class="level2">
+<h2 class="anchored" data-anchor-id="data-and-experimental-design">Data and Experimental Design</h2>
+<p>The evaluation uses the Big Sur daily hydrological series, spanning 40 hydrological years with October/September year boundaries. The first 29 years form the training set (<span class="math inline">\(n_{\text{train}} = 10{,}501\)</span>) and the remaining 11 years the held-out test set (<span class="math inline">\(n_{\text{test}} = 3{,}652\)</span>).</p>
+<p>The benchmark compares five model variants across two axes: model family and response transformation. SWR uses a kernel-convolution mean with no explicit GP covariance; its corrected-prediction mode applies the Cochrane–Orcutt AR predictor from Section 2. SWR-GP pairs the same kernel-convolution mean with a temporal NNGP covariance and uses the kriging predictor from <a href="#eq-kriging-temporal" class="quarto-xref">Equation&nbsp;21</a>. NN-GP replaces the kernel mean with a neural network while retaining the same NNGP covariance structure, serving the diagnostic role described in Section 4. SWR and SWR-GP are each fitted with both untransformed responses and Box-Cox (<span class="math inline">\(\lambda = 0.2\)</span>) transformed responses <span class="citation" data-cites="BoxCox1964">(<a href="#ref-BoxCox1964" role="doc-biblioref">Box and Cox 1964</a>)</span>, yielding four kernel-convolution variants. NN-GP is run with untransformed responses only: the neural network’s nonlinear activations can internally approximate monotone transformations, making an external Box-Cox layer redundant for a mean-function comparator. Throughout this section, “kriging mode” refers to the NNGP temporal kriging predictor for SWR-GP and NN-GP variants, and to the Cochrane–Orcutt AR-corrected predictor for SWR variants.</p>
+<p>Each variant reports predictions in two modes: simulation (mean prediction only) and corrected prediction (mean plus residual correction). This factorial design isolates the separate effects of model family, response transformation, and prediction mode on held-out performance.</p>
+<p>Common settings: Gaussian lag kernel, <span class="math inline">\(K \in \{1,2,3,4\}\)</span> with complexity selected by <span class="math inline">\(\text{BIC}_{\text{eff}}\)</span> for SWR and SWR-GP and by held-out training-tail kriging CRPS for NN-GP, <span class="math inline">\(m = 20\)</span> nearest neighbors, <span class="math inline">\(\nu = 1.5\)</span>, and maximum lag 100 days. Performance is reported using NSE <span class="citation" data-cites="NashSutcliffe1970">(<a href="#ref-NashSutcliffe1970" role="doc-biblioref">Nash and Sutcliffe 1970</a>)</span>, KGE <span class="citation" data-cites="Gupta2009">(<a href="#ref-Gupta2009" role="doc-biblioref">Gupta et al. 2009</a>)</span>, CRPS <span class="citation" data-cites="GneitingRaftery2007">(<a href="#ref-GneitingRaftery2007" role="doc-biblioref">Gneiting and Raftery 2007</a>)</span>, and RMSE. The primary comparison criterion is held-out test kriging CRPS. The benchmark uses <span class="math inline">\(m = 20\)</span> neighbors rather than the <span class="math inline">\(m = 10\)</span> used in the simulation study; the larger value better captures the longer effective dependence range of the Big Sur residuals.</p>
+</section>
+<section id="simulation-study-for-parameter-recovery" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-study-for-parameter-recovery">Simulation Study for Parameter Recovery</h2>
+<p>Before applying the framework to real data, a simulation study assesses the finite-sample identifiability and recovery of SWR-GP parameters under controlled conditions. This is motivated by the theoretical identifiability results of Section 4 and by the practical concern that nonlinear kernel-shape optimization may fail to separate mean and covariance components in finite samples.</p>
+<p>Synthetic streamflow series of length <span class="math inline">\(n = 2{,}500\)</span> are generated from the SWR-GP data-generating process using the observed Big Sur rainfall record as the covariate input. The simulation grid crosses three levels of kernel complexity (<span class="math inline">\(K \in \{1,2,3\}\)</span>) with three noise tiers (low: <span class="math inline">\(\tau^2 / \sigma^2 \approx 0.01\)</span>; medium: <span class="math inline">\(\tau^2 / \sigma^2 \approx 0.08\)</span>; high: <span class="math inline">\(\tau^2 / \sigma^2 \approx 0.3\)</span>), yielding nine cells with five replications each. True kernel-shape parameters <span class="math inline">\((\delta_k, \sigma_k)\)</span> are drawn with a minimum lag separation of 10 days to prevent aliasing, and true covariance parameters <span class="math inline">\((\sigma^2, \phi, \tau^2)\)</span> are drawn from ranges representative of hydrological residual processes. The fitting procedure uses four random restarts of the CMA-ES optimizer at each cell to mitigate sensitivity to initialization.</p>
+<p><a href="#tbl-sim-recovery" class="quarto-xref">Table&nbsp;1</a> summarizes the recovery results averaged across replications, and <a href="#fig-recovery-curves" class="quarto-xref">Figure&nbsp;1</a> displays the corresponding error profiles across noise tiers.</p>
+<div id="tbl-sim-recovery" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-sim-recovery-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Simulation recovery across a <span class="math inline">\(3 \times 3\)</span> grid of kernel complexity and noise level (<span class="math inline">\(m = 10\)</span>, 5 reps per cell). Mean RMSE is the average reconstruction error of the mean function across replications; remaining columns are relative errors for the indicated parameter groups.
+</figcaption>
+<div aria-describedby="tbl-sim-recovery-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 9%">
+<col style="width: 14%">
+<col style="width: 20%">
+<col style="width: 17%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(K\)</span></th>
+<th style="text-align: center;">Noise</th>
+<th style="text-align: center;">SNR (dB)</th>
+<th style="text-align: center;">Mean RMSE</th>
+<th style="text-align: center;">Lag Rel.&nbsp;Error</th>
+<th style="text-align: center;"><span class="math inline">\(\sigma^2\)</span> Rel.&nbsp;Error</th>
+<th style="text-align: center;"><span class="math inline">\(\phi\)</span> Rel.&nbsp;Error</th>
+<th style="text-align: center;"><span class="math inline">\(\tau^2\)</span> Rel.&nbsp;Error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">Low</td>
+<td style="text-align: center;">3.8</td>
+<td style="text-align: center;">0.052</td>
+<td style="text-align: center;">0.087</td>
+<td style="text-align: center;">0.092</td>
+<td style="text-align: center;">0.127</td>
+<td style="text-align: center;">0.996</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">Med</td>
+<td style="text-align: center;">4.8</td>
+<td style="text-align: center;">0.308</td>
+<td style="text-align: center;">0.199</td>
+<td style="text-align: center;">1.076</td>
+<td style="text-align: center;">0.224</td>
+<td style="text-align: center;">0.033</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">High</td>
+<td style="text-align: center;">1.3</td>
+<td style="text-align: center;">0.105</td>
+<td style="text-align: center;">0.099</td>
+<td style="text-align: center;">0.186</td>
+<td style="text-align: center;">0.166</td>
+<td style="text-align: center;">0.021</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">Low</td>
+<td style="text-align: center;">9.9</td>
+<td style="text-align: center;">0.120</td>
+<td style="text-align: center;">0.286</td>
+<td style="text-align: center;">0.261</td>
+<td style="text-align: center;">0.186</td>
+<td style="text-align: center;">1.905</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">Med</td>
+<td style="text-align: center;">7.2</td>
+<td style="text-align: center;">0.102</td>
+<td style="text-align: center;">0.635</td>
+<td style="text-align: center;">0.115</td>
+<td style="text-align: center;">0.040</td>
+<td style="text-align: center;">0.019</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">High</td>
+<td style="text-align: center;">6.3</td>
+<td style="text-align: center;">0.105</td>
+<td style="text-align: center;">0.381</td>
+<td style="text-align: center;">0.262</td>
+<td style="text-align: center;">0.127</td>
+<td style="text-align: center;">0.015</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">Low</td>
+<td style="text-align: center;">12.3</td>
+<td style="text-align: center;">0.077</td>
+<td style="text-align: center;">0.496</td>
+<td style="text-align: center;">0.067</td>
+<td style="text-align: center;">0.044</td>
+<td style="text-align: center;">1.208</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">Med</td>
+<td style="text-align: center;">12.2</td>
+<td style="text-align: center;">0.086</td>
+<td style="text-align: center;">0.605</td>
+<td style="text-align: center;">0.177</td>
+<td style="text-align: center;">0.078</td>
+<td style="text-align: center;">0.039</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">High</td>
+<td style="text-align: center;">9.0</td>
+<td style="text-align: center;">0.092</td>
+<td style="text-align: center;">0.541</td>
+<td style="text-align: center;">0.070</td>
+<td style="text-align: center;">0.034</td>
+<td style="text-align: center;">0.019</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<div id="fig-recovery-curves" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-recovery-curves-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../experiments/exp_simulation_recovery/plots/recovery_grid_curves.png" class="img-fluid figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-recovery-curves-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Simulation recovery error profiles across noise tiers for <span class="math inline">\(K = 1, 2, 3\)</span>. Left: mean-function RMSE is stable across <span class="math inline">\(K\)</span> and noise levels (one outlier at <span class="math inline">\(K{=}1\)</span>, medium noise). Center: kernel lag relative error increases with <span class="math inline">\(K\)</span>, reflecting permutation ambiguity. Right: covariance <span class="math inline">\(\sigma^2\)</span> relative error spikes at low noise for <span class="math inline">\(K{=}1\)</span> where <span class="math inline">\(\sigma^2\)</span> and <span class="math inline">\(\tau^2\)</span> are nearly unidentifiable.
+</figcaption>
+</figure>
+</div>
+<p>First, mean-function recovery (Mean RMSE column) is consistent across all cells: reconstruction errors remain below <span class="math inline">\(0.13\)</span> in all but one cell (<span class="math inline">\(K{=}1\)</span>, medium noise, where a high-variance replication produces <span class="math inline">\(0.308\)</span>). <a href="#fig-recovery-curves" class="quarto-xref">Figure&nbsp;1</a> (left panel) confirms this visually: the error bars for <span class="math inline">\(K{=}2\)</span> and <span class="math inline">\(K{=}3\)</span> are tightly clustered, while the <span class="math inline">\(K{=}1\)</span> medium-noise outlier is driven by a single replication that settles on a local optimum. Across the remaining eight cells, mean RMSE stays below <span class="math inline">\(0.13\)</span>, confirming that GLS estimation separates the SWR mean from the residual process.</p>
+<p>Second, covariance parameter recovery is sensitive to the noise tier. In the low-noise cells, where the nugget is small relative to the signal variance, the optimizer struggles to distinguish <span class="math inline">\(\sigma^2\)</span> from <span class="math inline">\(\tau^2\)</span>, producing <span class="math inline">\(\tau^2\)</span> relative errors exceeding 1.0 at all three <span class="math inline">\(K\)</span> values. This is expected: when <span class="math inline">\(\tau^2 \approx 0\)</span>, the likelihood surface along the <span class="math inline">\(\sigma^2\)</span>/<span class="math inline">\(\tau^2\)</span> ridge is flat, a well-known identifiability challenge in GP models. <a href="#fig-recovery-curves" class="quarto-xref">Figure&nbsp;1</a> (right panel) shows this pattern: the <span class="math inline">\(K{=}1\)</span> low-noise cell has a <span class="math inline">\(\sigma^2\)</span> relative error near <span class="math inline">\(1.0\)</span>, whereas the same cell’s <span class="math inline">\(\tau^2\)</span> error is inflated because the optimizer cannot separate the two variance components. At medium and high noise levels, <span class="math inline">\(\tau^2\)</span> relative errors drop below <span class="math inline">\(0.04\)</span>.</p>
+<p>Third, lag-shape recovery degrades with increasing <span class="math inline">\(K\)</span>: the mean lag relative error rises from <span class="math inline">\({\sim}0.09\)</span>–<span class="math inline">\(0.13\)</span> at <span class="math inline">\(K = 1\)</span> to <span class="math inline">\({\sim}0.43\)</span> at <span class="math inline">\(K = 2\)</span> and <span class="math inline">\({\sim}0.55\)</span> at <span class="math inline">\(K = 3\)</span> (<a href="#fig-recovery-curves" class="quarto-xref">Figure&nbsp;1</a>, center panel). This is driven by kernel-label permutation and partial aliasing between closely spaced kernels, not by failure of the composite mean reconstruction. The optimizer recovers the correct <span class="math inline">\(\widetilde{y}_t\)</span> while assigning individual kernel centers to permuted or shifted positions. This has limited consequence for prediction, since <span class="math inline">\(\widetilde{y}_t\)</span> is what enters the likelihood and kriging predictor, but individual kernel parameters should be interpreted with caution when <span class="math inline">\(K &gt; 1\)</span>.</p>
+<p>The simulation study confirms that the SWR-GP mean/covariance decomposition is estimable in samples comparable to the Big Sur training set. Covariance recovery requires adequate nugget presence to resolve the variance partition, and the framework supports parameter interpretability under realistic conditions.</p>
+</section>
+<section id="benchmark-results-and-model-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="benchmark-results-and-model-comparison">Benchmark Results and Model Comparison</h2>
+<p><a href="#tbl-benchmark-ranking" class="quarto-xref">Table&nbsp;2</a> and <a href="#tbl-benchmark-test" class="quarto-xref">Table&nbsp;3</a> report the held-out test metrics for all five variants. The primary criterion, held-out test kriging CRPS, reveals a clear ordering. All five variants selected <span class="math inline">\(K = 4\)</span> kernels under their respective complexity-selection rules, indicating that <span class="math inline">\(\text{BIC}_{\text{eff}}\)</span> consistently favors the richer kernel decomposition at this data scale.</p>
+<div id="tbl-benchmark-ranking" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-benchmark-ranking-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Benchmark summary, ranked by test kriging CRPS. Runtime is active CPU seconds. All variants selected <span class="math inline">\(K = 4\)</span>. CRPS and RMSE are in cfs (original streamflow scale).
+</figcaption>
+<div aria-describedby="tbl-benchmark-ranking-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 10%">
+<col style="width: 15%">
+<col style="width: 19%">
+<col style="width: 17%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variant</th>
+<th style="text-align: left;">Method</th>
+<th style="text-align: left;">Transform</th>
+<th style="text-align: center;">Selected <span class="math inline">\(K\)</span></th>
+<th style="text-align: center;">Runtime (s)</th>
+<th style="text-align: center;">Test CRPS (krig)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">SWR-BC</td>
+<td style="text-align: left;">SWR</td>
+<td style="text-align: left;">Box-Cox (<span class="math inline">\(\lambda=0.2\)</span>)</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">7.6</td>
+<td style="text-align: center;"><strong>0.309</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SWR-GP-BC</td>
+<td style="text-align: left;">SWR-GP</td>
+<td style="text-align: left;">Box-Cox (<span class="math inline">\(\lambda=0.2\)</span>)</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">407.2</td>
+<td style="text-align: center;">0.372</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NN-GP-N</td>
+<td style="text-align: left;">NN-GP</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">188.0</td>
+<td style="text-align: center;">0.598</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SWR-N</td>
+<td style="text-align: left;">SWR</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">4.5</td>
+<td style="text-align: center;">0.794</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SWR-GP-N</td>
+<td style="text-align: left;">SWR-GP</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">411.6</td>
+<td style="text-align: center;">0.799</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<div id="tbl-benchmark-test" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-benchmark-test-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Held-out test metrics for all selected variants in simulation and kriging modes. Bold indicates best in column. CRPS and RMSE are in cfs; NSE and KGE are dimensionless.
+</figcaption>
+<div aria-describedby="tbl-benchmark-test-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: center;">Sim NSE</th>
+<th style="text-align: center;">Sim KGE</th>
+<th style="text-align: center;">Sim CRPS</th>
+<th style="text-align: center;">Sim RMSE</th>
+<th style="text-align: center;">Krig NSE</th>
+<th style="text-align: center;">Krig KGE</th>
+<th style="text-align: center;">Krig CRPS</th>
+<th style="text-align: center;">Krig RMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">SWR-BC</td>
+<td style="text-align: center;"><strong>0.768</strong></td>
+<td style="text-align: center;"><strong>0.798</strong></td>
+<td style="text-align: center;"><strong>0.526</strong></td>
+<td style="text-align: center;"><strong>2.033</strong></td>
+<td style="text-align: center;"><strong>0.892</strong></td>
+<td style="text-align: center;"><strong>0.946</strong></td>
+<td style="text-align: center;"><strong>0.309</strong></td>
+<td style="text-align: center;"><strong>1.385</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SWR-N</td>
+<td style="text-align: center;">0.650</td>
+<td style="text-align: center;">0.720</td>
+<td style="text-align: center;">1.131</td>
+<td style="text-align: center;">2.499</td>
+<td style="text-align: center;">0.882</td>
+<td style="text-align: center;">0.916</td>
+<td style="text-align: center;">0.794</td>
+<td style="text-align: center;">1.453</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SWR-GP-BC</td>
+<td style="text-align: center;">0.602</td>
+<td style="text-align: center;">0.547</td>
+<td style="text-align: center;">0.899</td>
+<td style="text-align: center;">2.663</td>
+<td style="text-align: center;">0.887</td>
+<td style="text-align: center;">0.817</td>
+<td style="text-align: center;">0.372</td>
+<td style="text-align: center;">1.419</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SWR-GP-N</td>
+<td style="text-align: center;">0.617</td>
+<td style="text-align: center;">0.636</td>
+<td style="text-align: center;">1.188</td>
+<td style="text-align: center;">2.613</td>
+<td style="text-align: center;">0.878</td>
+<td style="text-align: center;">0.894</td>
+<td style="text-align: center;">0.799</td>
+<td style="text-align: center;">1.473</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NN-GP-N</td>
+<td style="text-align: center;">0.686</td>
+<td style="text-align: center;">0.697</td>
+<td style="text-align: center;">0.773</td>
+<td style="text-align: center;">2.365</td>
+<td style="text-align: center;">0.797</td>
+<td style="text-align: center;">0.893</td>
+<td style="text-align: center;">0.598</td>
+<td style="text-align: center;">1.904</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p><a href="#fig-timeseries-zoom" class="quarto-xref">Figure&nbsp;2</a> shows observed and predicted streamflow for SWR-BC over a representative two-year window from the held-out test period. The kriging prediction (blue) tracks the observed hydrograph closely through both peak events and recession limbs, while the simulation prediction (red) captures the overall shape but misses the timing and magnitude of individual peaks. The improvement from simulation to kriging is visually consistent with the <span class="math inline">\(41\%\)</span> CRPS reduction.</p>
+<div id="fig-timeseries-zoom" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-timeseries-zoom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../experiments/exp_swr_boxcox/plots/timeseries_zoom_krig_test.png" class="img-fluid figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-timeseries-zoom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: SWR-BC: observed vs.&nbsp;predicted streamflow for water years 2011–2012 (held-out test set). Kriging (AR-corrected) predictions track peak flows and recessions more closely than simulation (mean-only) predictions.
+</figcaption>
+</figure>
+</div>
+<p><a href="#fig-kernel-shapes" class="quarto-xref">Figure&nbsp;3</a> displays the four fitted lag kernels for SWR-BC, weighted by their regression coefficients <span class="math inline">\(|\beta_k|\)</span>. Kernel <span class="math inline">\(k{=}2\)</span> (<span class="math inline">\(\bar\ell = 0.2\)</span>d) captures the immediate surface-runoff response; kernel <span class="math inline">\(k{=}3\)</span> (<span class="math inline">\(\bar\ell = 3.1\)</span>d) represents a short-delay interflow component; and kernel <span class="math inline">\(k{=}1\)</span> (<span class="math inline">\(\bar\ell = 41\)</span>d) captures a broad, slow baseflow contribution. Kernel <span class="math inline">\(k{=}4\)</span> has a negative coefficient (<span class="math inline">\(\beta = -0.42\)</span>) and a mean lag exceeding the display window, acting as a slow-varying seasonal correction. The decomposition illustrates the interpretability of the SWR mean function: each kernel corresponds to a physically plausible runoff pathway.</p>
+<div id="fig-kernel-shapes" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-kernel-shapes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../experiments/exp_swr_boxcox/plots/kernel_shapes.png" class="img-fluid figure-img" style="width:85.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-kernel-shapes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Fitted lag kernels for SWR-BC (<span class="math inline">\(K{=}4\)</span>), weighted by <span class="math inline">\(|\beta_k|\)</span>. Each kernel represents a distinct rainfall-to-streamflow delay pathway, from immediate surface runoff (<span class="math inline">\(k{=}2\)</span>) through baseflow (<span class="math inline">\(k{=}1\)</span>).
+</figcaption>
+</figure>
+</div>
+<p><em>Response transformation.</em> The Box-Cox transformation (<span class="math inline">\(\lambda = 0.2\)</span>) is uniformly beneficial. In kriging mode, it reduces test CRPS by <span class="math inline">\(0.485\)</span> for SWR (from <span class="math inline">\(0.794\)</span> to <span class="math inline">\(0.309\)</span>) and by <span class="math inline">\(0.427\)</span> for SWR-GP (from <span class="math inline">\(0.799\)</span> to <span class="math inline">\(0.372\)</span>). Without Box-Cox, the untransformed variants produce kriging CRPS values near <span class="math inline">\(0.80\)</span>, more than twice the transformed counterparts. The Box-Cox compression of the upper tail brings the right-skewed streamflow distribution closer to the Gaussian assumption underlying both families.</p>
+<p><em>Simulation versus kriging.</em> The simulation-to-kriging improvement is large and consistent. For SWR-BC, kriging reduces test CRPS from <span class="math inline">\(0.526\)</span> to <span class="math inline">\(0.309\)</span> (<span class="math inline">\(41\%\)</span>). For SWR-GP-BC, the reduction is from <span class="math inline">\(0.899\)</span> to <span class="math inline">\(0.372\)</span> (<span class="math inline">\(59\%\)</span>). Both correction mechanisms capture persistent serial dependence that the mean function leaves unabsorbed. At this site, the residual correction contributes more to out-of-sample accuracy than the choice of mean-function family.</p>
+<p>The per-<span class="math inline">\(K\)</span> breakdown reinforces this finding (<a href="#tbl-per-k-comparison" class="quarto-xref">Table&nbsp;4</a>). For SWR-GP-BC, simulation-mode CRPS improves substantially with <span class="math inline">\(K\)</span> (from <span class="math inline">\(1.203\)</span> to <span class="math inline">\(0.899\)</span>), but kriging-mode CRPS is nearly flat: it drops from <span class="math inline">\(0.443\)</span> at <span class="math inline">\(K{=}1\)</span> to <span class="math inline">\(0.372\)</span> at <span class="math inline">\(K{=}4\)</span>, with most of the improvement between <span class="math inline">\(K{=}1\)</span> and <span class="math inline">\(K{=}2\)</span>. The GP covariance absorbs the bulk of the residual structure regardless of mean-function complexity. By contrast, SWR-BC kriging CRPS responds more strongly to <span class="math inline">\(K\)</span>: from <span class="math inline">\(0.454\)</span> at <span class="math inline">\(K{=}1\)</span> to <span class="math inline">\(0.309\)</span> at <span class="math inline">\(K{=}4\)</span>, a <span class="math inline">\(32\%\)</span> reduction. The simpler AR correction does not absorb mean-function deficiencies as aggressively as the GP, so improvements in the SWR mean translate more directly to better corrected predictions.</p>
+<div id="tbl-per-k-comparison" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-per-k-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: SWR-GP-BC per-<span class="math inline">\(K\)</span> test metrics. Simulation CRPS improves with <span class="math inline">\(K\)</span> while kriging CRPS is largely insensitive to mean-function complexity beyond <span class="math inline">\(K{=}2\)</span>.
+</figcaption>
+<div aria-describedby="tbl-per-k-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(K\)</span></th>
+<th style="text-align: center;">Sim CRPS</th>
+<th style="text-align: center;">Sim NSE</th>
+<th style="text-align: center;">Krig CRPS</th>
+<th style="text-align: center;">Krig NSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1.203</td>
+<td style="text-align: center;">0.188</td>
+<td style="text-align: center;">0.443</td>
+<td style="text-align: center;">0.868</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">1.064</td>
+<td style="text-align: center;">0.409</td>
+<td style="text-align: center;">0.402</td>
+<td style="text-align: center;">0.884</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0.901</td>
+<td style="text-align: center;">0.608</td>
+<td style="text-align: center;">0.376</td>
+<td style="text-align: center;">0.885</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">0.899</td>
+<td style="text-align: center;">0.602</td>
+<td style="text-align: center;">0.372</td>
+<td style="text-align: center;">0.887</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p><em>SWR-BC versus SWR-GP-BC.</em> SWR-BC achieves kriging CRPS <span class="math inline">\(0.309\)</span>, outperforming SWR-GP-BC (<span class="math inline">\(0.372\)</span>) by <span class="math inline">\(0.063\)</span> units at <span class="math inline">\(1/50\)</span>th the compute cost (<span class="math inline">\(7.6\)</span> vs.&nbsp;<span class="math inline">\(407.2\)</span> CPU seconds). The SWR-GP model is theoretically better aligned with the assumptions of Section 4, since it jointly optimizes kernel-shape, mean, and covariance parameters through a single profile likelihood. However, joint optimization over the full <span class="math inline">\((\boldsymbol{\eta}, \boldsymbol{\theta})\)</span> space is harder than the two-stage SWR procedure. SWR-GP simulation-mode performance (test CRPS <span class="math inline">\(0.899\)</span>, NSE <span class="math inline">\(0.602\)</span>, KGE <span class="math inline">\(0.547\)</span>) is worse than the untransformed SWR baseline (NSE <span class="math inline">\(0.650\)</span>, KGE <span class="math inline">\(0.720\)</span>), indicating that the joint optimizer finds kernel-shape parameters that are suboptimal for the mean function — worse not merely relative to the Box-Cox SWR, but worse than the plain untransformed baseline in simulation mode. The Cochrane–Orcutt AR correction applied to the better-fitted SWR mean then compensates for the residual dependence.</p>
+<p>This result does not invalidate the SWR-GP framework. It indicates that the joint optimization objective is more demanding than the two-stage alternative. A dedicated estimation-mode study confirmed that alternating-block strategies (updating <span class="math inline">\(\boldsymbol{\eta}\)</span> and <span class="math inline">\(\boldsymbol{\theta}\)</span> in separate L-BFGS-B phases) achieve numerically identical kriging performance to the joint CMA-ES approach, ruling out estimation mode as the source of the gap. The difference is therefore structural: the two-stage procedure benefits from a better-conditioned kernel-shape optimization unconstrained by the covariance penalty.</p>
+<p><em>NN-GP results.</em> NN-GP-N achieves simulation-mode test CRPS <span class="math inline">\(0.773\)</span>, the best simulation CRPS among the five variants, reflecting the network’s ability to capture nonlinear rainfall-runoff relationships beyond the kernel-convolution structure. This advantage reverses in kriging mode: NN-GP-N reaches kriging CRPS <span class="math inline">\(0.598\)</span>, worse than both SWR-GP-BC (<span class="math inline">\(0.372\)</span>) and SWR-BC (<span class="math inline">\(0.309\)</span>). The simulation-to-kriging improvement for NN-GP-N is <span class="math inline">\(0.175\)</span> CRPS units (<span class="math inline">\(23\%\)</span>), far smaller than the <span class="math inline">\(0.527\)</span> units (<span class="math inline">\(59\%\)</span>) achieved by SWR-GP-BC.</p>
+<p>The training-period metrics (<a href="#tbl-benchmark-train" class="quarto-xref">Table&nbsp;5</a>) expose the mechanism. NN-GP-N train kriging CRPS is <span class="math inline">\(0.174\)</span>, compared to test kriging CRPS of <span class="math inline">\(0.598\)</span>, a gap exceeding <span class="math inline">\(0.42\)</span> units. This gap is absent in SWR and SWR-GP, where test kriging CRPS is actually <em>lower</em> than train kriging CRPS by up to <span class="math inline">\(0.06\)</span> units, reflecting that the test period is somewhat easier than the training period. Against this baseline, the NN-GP reversal is even more striking. The neural network memorizes the training series, producing near-zero in-sample residuals (train krig RMSE <span class="math inline">\(= 0.17\)</span> cfs). The NNGP then fits a covariance model to these artificially small residuals, rendering the kriging correction ineffective out of sample. This is consistent with the finite-sample analysis of <span class="citation" data-cites="ZhanDatta2024">Zhan and Datta (<a href="#ref-ZhanDatta2024" role="doc-biblioref">2024</a>)</span>: when working covariance is estimated from overfitted residuals, the spectral interval of the discrepancy matrix <span class="math inline">\(\mathbf{E}\)</span> widens, inflating the estimation error bound.</p>
+<p>At this site and data scale, the SWR kernel-convolution provides sufficient mean-function flexibility for out-of-sample generalization. The additional capacity of the neural network does not translate into held-out benefit and instead introduces overfitting of the covariance layer.</p>
+<div id="tbl-benchmark-train" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-benchmark-train-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5: Training-period metrics for the selected complexity in each variant, documenting the train-to-test gap discussed in the NN-GP analysis. Units as in <a href="#tbl-benchmark-test" class="quarto-xref">Table&nbsp;3</a>.
+</figcaption>
+<div aria-describedby="tbl-benchmark-train-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: center;">Sim NSE</th>
+<th style="text-align: center;">Sim KGE</th>
+<th style="text-align: center;">Sim CRPS</th>
+<th style="text-align: center;">Sim RMSE</th>
+<th style="text-align: center;">Krig NSE</th>
+<th style="text-align: center;">Krig KGE</th>
+<th style="text-align: center;">Krig CRPS</th>
+<th style="text-align: center;">Krig RMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">SWR-BC</td>
+<td style="text-align: center;">0.699</td>
+<td style="text-align: center;">0.832</td>
+<td style="text-align: center;">0.680</td>
+<td style="text-align: center;">2.635</td>
+<td style="text-align: center;">0.831</td>
+<td style="text-align: center;">0.862</td>
+<td style="text-align: center;">0.367</td>
+<td style="text-align: center;">1.973</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SWR-N</td>
+<td style="text-align: center;">0.697</td>
+<td style="text-align: center;">0.730</td>
+<td style="text-align: center;">1.179</td>
+<td style="text-align: center;">2.641</td>
+<td style="text-align: center;">0.900</td>
+<td style="text-align: center;">0.922</td>
+<td style="text-align: center;">0.813</td>
+<td style="text-align: center;">1.522</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SWR-GP-BC</td>
+<td style="text-align: center;">0.671</td>
+<td style="text-align: center;">0.645</td>
+<td style="text-align: center;">0.963</td>
+<td style="text-align: center;">2.755</td>
+<td style="text-align: center;">0.826</td>
+<td style="text-align: center;">0.757</td>
+<td style="text-align: center;">0.426</td>
+<td style="text-align: center;">2.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SWR-GP-N</td>
+<td style="text-align: center;">0.665</td>
+<td style="text-align: center;">0.665</td>
+<td style="text-align: center;">1.245</td>
+<td style="text-align: center;">2.781</td>
+<td style="text-align: center;">0.896</td>
+<td style="text-align: center;">0.904</td>
+<td style="text-align: center;">0.819</td>
+<td style="text-align: center;">1.551</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NN-GP-N</td>
+<td style="text-align: center;">0.976</td>
+<td style="text-align: center;">0.949</td>
+<td style="text-align: center;">0.327</td>
+<td style="text-align: center;">0.741</td>
+<td style="text-align: center;">0.999</td>
+<td style="text-align: center;">0.998</td>
+<td style="text-align: center;">0.174</td>
+<td style="text-align: center;">0.173</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="calibration-and-coverage-diagnostics" class="level2">
+<h2 class="anchored" data-anchor-id="calibration-and-coverage-diagnostics">Calibration and Coverage Diagnostics</h2>
+<p>Probability integral transform (PIT) histograms assess marginal calibration of the predictive distributions on the held-out test set. For a well-calibrated model, the PIT values should follow a Uniform<span class="math inline">\((0,1)\)</span> distribution (PIT variance <span class="math inline">\(= 1/12 \approx 0.083\)</span>). <a href="#fig-pit-comparison" class="quarto-xref">Figure&nbsp;4</a> presents the three most informative diagnostics, illustrating the improvement from simulation to kriging mode and the miscalibration introduced by neural-network overfitting. Innovation QQ plots on the transformed scale are in Appendix B.</p>
+<div id="fig-pit-comparison" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pit-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../experiments/exp_swr_boxcox/plots/pit_hist_sim_test.png" class="img-fluid figure-img"></p>
+<figcaption>SWR-BC, sim test</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../experiments/exp_swr_boxcox/plots/pit_hist_krig_test.png" class="img-fluid figure-img"></p>
+<figcaption>SWR-BC, krig test</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../experiments/exp_nn_gp_none/plots/pit_hist_krig_test.png" class="img-fluid figure-img"></p>
+<figcaption>NN-GP, krig test</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pit-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Held-out test PIT histograms. The dashed line marks Uniform<span class="math inline">\((0,1)\)</span> density. (a) SWR-BC simulation mode: left-skewed (PIT mean <span class="math inline">\(0.40\)</span>), indicating systematic overprediction during low-flow periods. (b) SWR-BC kriging mode: peaked at center (PIT mean <span class="math inline">\(0.48\)</span>, variance <span class="math inline">\(0.028\)</span>), indicating overdispersed prediction intervals. (c) NN-GP kriging mode: bimodal with mass at <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span> (PIT variance <span class="math inline">\(0.124\)</span>), indicating underdispersed intervals from covariance overfitting.
+</figcaption>
+</figure>
+</div>
+<p>For SWR-BC in simulation mode (<a href="#fig-pit-comparison" class="quarto-xref">Figure&nbsp;4</a> (a)), the PIT distribution is left-skewed (PIT mean <span class="math inline">\(0.40\)</span>, variance <span class="math inline">\(0.056\)</span>), indicating that the model tends to overpredict. During extended dry periods, the mean prediction carries forward positive baseflow components while observed flows drop to near zero, pushing observations into the lower tail of the predictive distribution. The transition to kriging mode (<a href="#fig-pit-comparison" class="quarto-xref">Figure&nbsp;4</a> (b)) largely eliminates this bias: PIT mean improves from <span class="math inline">\(0.40\)</span> to <span class="math inline">\(0.48\)</span>, confirming that the AR correction adjusts the conditional mean toward the observation. The kriging PIT is sharply peaked around <span class="math inline">\(0.5\)</span>, with variance <span class="math inline">\(0.028\)</span> — well below the uniform target of <span class="math inline">\(0.083\)</span>. This indicates overdispersed prediction intervals: the conditional predictive distribution is wider than necessary for the majority of observations. The overdispersion is concentrated in the low-flow regime that dominates the record, where both observed and predicted values cluster near the lower bound and the prediction uncertainty interval comfortably brackets the range. In the high-flow tail, the situation reverses: innovation QQ plots (<a href="#fig-qq-swr-krig" class="quarto-xref">Figure&nbsp;6</a> in Appendix B) show that standardized residuals reach <span class="math inline">\(\pm 15\)</span> where the Gaussian reference predicts <span class="math inline">\(\pm 4\)</span>, indicating that the prediction intervals are too narrow for extreme events. The combination of overdispersion in the bulk and underdispersion in the tails is characteristic of a Gaussian model applied to heavy-tailed data, even after Box-Cox transformation.</p>
+<p>SWR-GP-BC kriging shows a similar peaked PIT (PIT mean <span class="math inline">\(0.45\)</span>, variance <span class="math inline">\(0.029\)</span>; <a href="#fig-pit-swr-gp-krig" class="quarto-xref">Figure&nbsp;7</a> in Appendix B). The PIT mean is further from <span class="math inline">\(0.50\)</span> than SWR-BC’s <span class="math inline">\(0.48\)</span>, consistent with the larger mean-function bias identified in the simulation metrics. Despite the <span class="math inline">\(0.063\)</span> CRPS gap between SWR-BC and SWR-GP-BC, both exhibit comparable calibration structure, confirming that the performance difference is driven by mean-function fit rather than by the distributional quality of the residual correction.</p>
+<p>The NN-GP-N kriging PIT (<a href="#fig-pit-comparison" class="quarto-xref">Figure&nbsp;4</a> (c)) is strikingly different: a bimodal distribution with mass concentrated near <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span> (PIT variance <span class="math inline">\(0.124\)</span>, exceeding the uniform value). Observations frequently fall in the extreme tails of their predictive distributions, meaning the prediction intervals are systematically too narrow. The neural network’s near-zero in-sample residuals cause the NNGP to estimate a covariance with small marginal variance (<span class="math inline">\(\hat\sigma^2 = 0.48\)</span>, <span class="math inline">\(\hat\tau^2 = 0.007\)</span>). Out of sample, where the mean prediction is biased, these narrow intervals fail to cover the actual observations. The result is both mean bias and variance underestimation — a compounding failure that the PIT captures clearly.</p>
+</section>
+</section>
+<section id="discussion" class="level1">
+<h1>Discussion</h1>
+<section id="contributions-and-relationship-to-the-original-framework" class="level2">
+<h2 class="anchored" data-anchor-id="contributions-and-relationship-to-the-original-framework">Contributions and Relationship to the Original Framework</h2>
+<p>The primary contribution is to demonstrate that the NN-GLS framework of <span class="citation" data-cites="ZhanDatta2024">Zhan and Datta (<a href="#ref-ZhanDatta2024" role="doc-biblioref">2024</a>)</span> transfers coherently from the spatial to the temporal domain. The spatial nearest-neighbor DAG is replaced by the natural causal ordering of a time series, but the key structural advantages are preserved: separation of mean and dependence, GLS estimation, scalable NNGP inference, and kriging with uncertainty. The implementation changes are modest: ordered-predecessor neighbor sets replace spatial nearest neighbors, and the kernel-convolution SWR mean replaces the neural network mean.</p>
+<p>The choice of a linear SWR mean rather than a neural network is itself informative. In the original NN-GLS paper, the neural network mean is the central innovation, motivated by complex nonlinear covariate effects in spatial regression. In the hydrological application, the relevant nonlinearity is in the lag structure, not the functional form: rainfall influences streamflow through delayed, attenuated pathways that the Gaussian kernel convolution captures with <span class="math inline">\(2K\)</span> shape parameters. The NN-GP comparator confirms this. The neural network achieves better in-sample fit but worse out-of-sample generalization, indicating that the kernel-convolution structure provides an appropriate inductive bias. This aligns with <span class="citation" data-cites="ZhanDatta2024">Zhan and Datta (<a href="#ref-ZhanDatta2024" role="doc-biblioref">2024</a>)</span>: when the mean function is overparameterized relative to the data, covariance estimation degrades and GLS efficiency gains are lost.</p>
+</section>
+<section id="estimation-strategy-joint-versus-two-stage" class="level2">
+<h2 class="anchored" data-anchor-id="estimation-strategy-joint-versus-two-stage">Estimation Strategy: Joint versus Two-Stage</h2>
+<p>A notable finding is that the two-stage SWR-BC procedure (fit mean, then correct residuals with an AR model) outperforms the joint SWR-GP-BC optimization on held-out data. This is surprising because the joint profile-likelihood approach, better aligned with Section 4, should in principle be at least as efficient.</p>
+<p>The discrepancy likely reflects the difficulty of the joint optimization objective. The SWR-GP criterion simultaneously searches over <span class="math inline">\(2K\)</span> kernel-shape parameters and 3 covariance parameters, all of which interact through the decorrelation map. The simulation study confirms that the optimizer reliably recovers the composite mean function but can settle on suboptimal configurations of individual kernel-shape parameters, particularly when kernels are closely spaced. In contrast, the two-stage SWR procedure separates the optimization into two lower-dimensional, better-conditioned problems: kernel-shape estimation under OLS, followed by AR estimation on the residuals.</p>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<p>Several limitations should be noted.</p>
+<p><em>Single-site evaluation.</em> All empirical results are based on a single watershed (Big Sur). The relative ranking of SWR-BC, SWR-GP-BC, and NN-GP may differ in basins with stronger nonlinear dynamics, more pronounced non-stationarity, or different data scales. Multi-site validation is necessary before the conclusions can be generalized.</p>
+<p><em>Fixed smoothness.</em> The Mat'{e}rn smoothness is fixed at <span class="math inline">\(\nu = 1.5\)</span> throughout. The peaked but centered PIT histograms for the best Box-Cox variants in kriging mode (<a href="#fig-pit-comparison" class="quarto-xref">Figure&nbsp;4</a> (b) and <a href="#fig-pit-swr-gp-krig" class="quarto-xref">Figure&nbsp;7</a>) suggest <span class="math inline">\(\nu = 1.5\)</span> is adequate for this site, though the overdispersion indicates room for sharper uncertainty quantification. Profiling over <span class="math inline">\(\nu \in \{0.5, 1.5, 2.5\}\)</span> or using a generalized Wendland covariance could be explored in multi-site settings where smoothness is less predictable.</p>
+<p><em>Gaussian observation layer.</em> The Box-Cox transformation addresses marginal non-Gaussianity, but the model still assumes Gaussian errors on the transformed scale. For extreme flows, a more flexible observation model (generalized extreme value margin, non-Gaussian state-space formulation) may be needed. The covariance-layer framework is compatible with such extensions, but the computational implications have not been explored.</p>
+<p><em>NN-GP overfitting.</em> The neural network exhibits clear overfitting, as diagnosed by the train-to-test kriging CRPS gap. This supports the conclusion that SWR provides sufficient mean-function flexibility, but also reflects implementation limitations: the epoch budget and absence of structured regularization (spectral normalization, dropout calibrated to effective sample size) may contribute. A more carefully tuned NN-GP could narrow the gap, though it would not change the finding that the SWR mean is adequate for this site.</p>
+<p><em>Temporal stationarity.</em> The Mat'{e}rn covariance assumes second-order stationarity of the residual process. Hydrological time series can exhibit non-stationary behavior due to seasonal effects, land-use change, or climate trends. The present framework could accommodate non-stationarity through time-varying covariance parameters or a deformation-based approach, but this has not been pursued.</p>
+</section>
+<section id="connections-to-the-broader-literature" class="level2">
+<h2 class="anchored" data-anchor-id="connections-to-the-broader-literature">Connections to the Broader Literature</h2>
+<p>The GLS approach to handling dependent errors has precedents. <span class="citation" data-cites="CochraneOrcutt1949">Cochrane and Orcutt (<a href="#ref-CochraneOrcutt1949" role="doc-biblioref">1949</a>)</span> introduced the iterative OLS/AR correction for linear models with autocorrelated errors, which remains the standard in the SWR baseline. The NN-GLS framework generalizes this by replacing the AR structure with a full GP covariance and extending the mean to neural network form. The temporal adaptation presented here occupies a middle ground: the mean is nonlinear in kernel-shape parameters but linear in coefficients, and the covariance is a GP rather than an AR model. GLS estimation and kriging follow directly from <span class="citation" data-cites="ZhanDatta2024">Zhan and Datta (<a href="#ref-ZhanDatta2024" role="doc-biblioref">2024</a>)</span>.</p>
+<p>The NNGP approximation <span class="citation" data-cites="Datta2016">(<a href="#ref-Datta2016" role="doc-biblioref">Datta et al. 2016</a>)</span> is central to computational feasibility. In the temporal setting, the ordered-predecessor construction is particularly clean because the natural time ordering eliminates the reference-set ordering required in the spatial case. For a Mat'{e}rn covariance with finite range, the <span class="math inline">\(m\)</span> most recent predecessors capture the dominant conditional dependence, so approximation error is controlled by the ratio of <span class="math inline">\(m\)</span> to the effective range <span class="math inline">\(\phi\)</span>.</p>
+</section>
+<section id="directions-for-further-work" class="level2">
+<h2 class="anchored" data-anchor-id="directions-for-further-work">Directions for Further Work</h2>
+<p>Several extensions follow naturally from the present analysis.</p>
+<p>First, the framework should be evaluated across multiple basins and data regimes to assess the portability of the present findings. Basins with stronger nonlinear dynamics or shorter records would provide a more challenging test of the SWR-versus-NN comparison and of the NNGP approximation quality.</p>
+<p>Second, the joint SWR-GP optimization merits a dedicated study. The two-stage procedure outperforms the joint profile likelihood here, and the mechanism — better-conditioned kernel-shape estimation unconstrained by the covariance penalty — is identified but not fully characterized. A systematic comparison of joint, alternating-block, and two-stage strategies across a range of basins and sample sizes would clarify when joint estimation is preferable.</p>
+<p>Third, the simulation-recovery study should be expanded to a larger grid of signal-to-noise ratios, dependence ranges, and sample sizes, ideally including an assessment of coverage properties under the estimated (rather than true) covariance parameters.</p>
+<p>Fourth, the observation layer should be extended beyond Gaussian assumptions. A hierarchical formulation with a non-Gaussian response distribution (gamma, generalized extreme value) and a latent GP would better model hydrological extremes while preserving the mean/covariance separation.</p>
+<p>Finally, the NN-GP training loop already employs NNGP MLE for covariance updates. More frequent alternation between network-weight and covariance updates, or a finer learning-rate schedule for the covariance step, could reduce the covariance-layer overfitting visible in the train-to-test CRPS gap.</p>
+</section>
+</section>
+
+
+<section id="references" class="level1">
+<h1>References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-BoxCox1964" class="csl-entry" role="listitem">
+Box, G. E. P., and D. R. Cox. 1964. <span>“An Analysis of Transformations.”</span> <em>Journal of the Royal Statistical Society: Series B (Methodological)</em> 26 (2): 211–52.
+</div>
+<div id="ref-CochraneOrcutt1949" class="csl-entry" role="listitem">
+Cochrane, D., and G. H. Orcutt. 1949. <span>“Application of Least Squares Regression to Relationships Containing Auto-Correlated Error Terms.”</span> <em>Journal of the American Statistical Association</em> 44 (245): 32–61.
+</div>
+<div id="ref-Datta2016" class="csl-entry" role="listitem">
+Datta, A., S. Banerjee, A. O. Finley, and A. E. Gelfand. 2016. <span>“Hierarchical Nearest-Neighbor Gaussian Process Models for Large Geostatistical Datasets.”</span> <em>Journal of the American Statistical Association</em> 111 (514): 800–812.
+</div>
+<div id="ref-GneitingRaftery2007" class="csl-entry" role="listitem">
+Gneiting, T., and A. E. Raftery. 2007. <span>“Strictly Proper Scoring Rules, Prediction, and Estimation.”</span> <em>Journal of the American Statistical Association</em> 102 (477): 359–78.
+</div>
+<div id="ref-Gupta2009" class="csl-entry" role="listitem">
+Gupta, H. V., H. Kling, K. K. Yilmaz, and G. F. Martinez. 2009. <span>“Decomposition of the Mean Squared Error and <span>NSE</span> Performance Criteria: Implications for Improving Hydrological Modelling.”</span> <em>Journal of Hydrology</em> 377 (1-2): 80–91.
+</div>
+<div id="ref-Hansen2003" class="csl-entry" role="listitem">
+Hansen, N., and A. Ostermeier. 2003. <span>“Completely Derandomized Self-Adaptation in Evolution Strategies.”</span> <em>Evolutionary Computation</em> 9 (2): 159–95.
+</div>
+<div id="ref-Matern1960" class="csl-entry" role="listitem">
+Matérn, B. 1960. <span>“Spatial Variation.”</span> <em>Meddelanden Fr<span>å</span>n Statens Skogsforskningsinstitut</em> 49.
+</div>
+<div id="ref-NashSutcliffe1970" class="csl-entry" role="listitem">
+Nash, J. E., and J. V. Sutcliffe. 1970. <span>“River Flow Forecasting Through Conceptual Models Part i — a Discussion of Principles.”</span> <em>Journal of Hydrology</em> 10 (3): 282–90.
+</div>
+<div id="ref-Schrunner2023" class="csl-entry" role="listitem">
+Schrunner, S., P. Pishrobat, M. Janssen, A. Jenul, J. Cao, A. A. Ameli, and W. J. Welch. 2023. <span>“A Gaussian Sliding Windows Regression Model for Hydrological Inference.”</span> <em>Journal of the Royal Statistical Society: Series C (Applied Statistics)</em>.
+</div>
+<div id="ref-ZhanDatta2024" class="csl-entry" role="listitem">
+Zhan, W., and A. Datta. 2024. <span>“Neural Networks for Geospatial Data.”</span> <em>Journal of the American Statistical Association</em>.
+</div>
+</div>
+</section>
+
+<div id="quarto-appendix" class="default"><section id="appendix-proofs-of-theoretical-properties" class="level1 appendix"><h2 class="anchored quarto-appendix-heading">Appendix: Proofs of Theoretical Properties</h2><div class="quarto-appendix-contents">
+
+<p>This appendix collects proofs and derivations for the theoretical statements used in Section 4. Throughout, let <span class="math inline">\(\boldsymbol{\eta}\)</span> denote the SWR kernel parameters, let <span class="math inline">\(\boldsymbol{\beta}\)</span> denote the linear mean coefficients, and let <span class="math inline">\(\boldsymbol{\theta}\)</span> denote the covariance parameters. Write <span class="math inline">\(\mu_n(\boldsymbol{\eta},\boldsymbol{\beta})=\mathbf{X}_n(\boldsymbol{\eta})\boldsymbol{\beta}\)</span> for the mean vector and let <span class="math inline">\(\Sigma_n(\boldsymbol{\theta})\)</span> and <span class="math inline">\(\tilde\Sigma_n(\boldsymbol{\theta})\)</span> denote the exact and ordered-neighbor approximate covariance matrices, respectively.</p>
+<section id="consistency-under-temporal-nngp-approximation-theorem-1" class="level2">
+<h2 class="anchored" data-anchor-id="consistency-under-temporal-nngp-approximation-theorem-1">Consistency under Temporal NNGP Approximation (Theorem 1)</h2>
+<p>Consider the approximate criterion <span class="math display">\[
+\widetilde Q_n(\boldsymbol{\eta},\boldsymbol{\beta},\boldsymbol{\theta})
+=\frac{1}{n}\bigl(\mathbf{y}_n-\mu_n(\boldsymbol{\eta},\boldsymbol{\beta})\bigr)^\top
+\widetilde\Sigma_n^{-1}(\boldsymbol{\theta})
+\bigl(\mathbf{y}_n-\mu_n(\boldsymbol{\eta},\boldsymbol{\beta})\bigr).
+\]</span> Assume: (i) the parameter space is compact; (ii) the true parameter <span class="math inline">\(\psi_0=(\boldsymbol{\eta}_0,\boldsymbol{\beta}_0,\boldsymbol{\theta}_0)\)</span> lies in its interior; (iii) the map <span class="math inline">\(\psi \mapsto \mu_n(\psi)\)</span> is continuous uniformly in <span class="math inline">\(n\)</span>; (iv) <span class="math inline">\(\Sigma_n(\boldsymbol{\theta})\)</span> and <span class="math inline">\(\tilde\Sigma_n(\boldsymbol{\theta})\)</span> are uniformly positive definite over the admissible parameter space; and (v) the ordered-neighbor approximation satisfies <span class="math inline">\(\sup_{\boldsymbol{\theta}}\|\tilde\Sigma_n^{-1}(\boldsymbol{\theta})-\Sigma_n^{-1}(\boldsymbol{\theta})\|\to 0\)</span>. Under these conditions, <span class="math display">\[
+\sup_{\psi}\bigl|\tilde Q_n(\psi)-Q_n(\psi)\bigr|
+\leq
+\frac{1}{n}\sup_{\psi}\|r_n(\psi)\|_2^2
+\sup_{\boldsymbol{\theta}}\|\tilde\Sigma_n^{-1}(\boldsymbol{\theta})-\Sigma_n^{-1}(\boldsymbol{\theta})\|
+\longrightarrow 0,
+\]</span> where <span class="math inline">\(r_n(\psi)=\mathbf{y}_n-\mu_n(\psi)\)</span>. Thus the approximate criterion converges uniformly to the exact GLS criterion. Standard M-estimation arguments then imply that any minimizer of <span class="math inline">\(\widetilde Q_n\)</span> converges in probability to the unique minimizer of the population target.</p>
+<p>The ordered-indexing assumption is what makes the approximation coherent in the temporal setting. Because each time point conditions only on preceding neighbors, the approximate precision admits the same triangular factorization logic as the spatial NNGP, but with temporal order replacing spatial graph order. The approximation error is controlled by how well the chosen neighbor depth <span class="math inline">\(m\)</span> captures the effective dependence range of the residual process.</p>
+</section>
+<section id="identifiability-of-mean-and-covariance-parameters-proposition-1" class="level2">
+<h2 class="anchored" data-anchor-id="identifiability-of-mean-and-covariance-parameters-proposition-1">Identifiability of Mean and Covariance Parameters (Proposition 1)</h2>
+<p>Fix <span class="math inline">\((\boldsymbol{\eta},\boldsymbol{\theta})\)</span> and define the GLS objective <span class="math display">\[
+Q_n(\boldsymbol{\beta}\mid \boldsymbol{\eta},\boldsymbol{\theta})
+=\bigl(\mathbf{y}_n-\mathbf{X}_n(\boldsymbol{\eta})\boldsymbol{\beta}\bigr)^\top
+\Sigma_n^{-1}(\boldsymbol{\theta})
+\bigl(\mathbf{y}_n-\mathbf{X}_n(\boldsymbol{\eta})\boldsymbol{\beta}\bigr).
+\]</span> Differentiating with respect to <span class="math inline">\(\boldsymbol{\beta}\)</span> yields the normal equations <span class="math display">\[
+\mathbf{X}_n(\boldsymbol{\eta})^\top\Sigma_n^{-1}(\boldsymbol{\theta})\mathbf{X}_n(\boldsymbol{\eta})\,\boldsymbol{\beta}
+=\mathbf{X}_n(\boldsymbol{\eta})^\top\Sigma_n^{-1}(\boldsymbol{\theta})\mathbf{y}_n.
+\]</span> Because <span class="math inline">\(\Sigma_n^{-1}(\boldsymbol{\theta})\)</span> is positive definite and <span class="math inline">\(\mathbf{X}_n(\boldsymbol{\eta})\)</span> has full column rank, the matrix <span class="math inline">\(\mathbf{X}_n(\boldsymbol{\eta})^\top\Sigma_n^{-1}(\boldsymbol{\theta})\mathbf{X}_n(\boldsymbol{\eta})\)</span> is positive definite. Hence it is invertible and the minimizer in <span class="math inline">\(\boldsymbol{\beta}\)</span> is unique, proving identifiability of the mean coefficients conditional on <span class="math inline">\((\boldsymbol{\eta},\boldsymbol{\theta})\)</span>. Changing <span class="math inline">\(\boldsymbol{\theta}\)</span> changes the weighting matrix but does not collapse column rank of <span class="math inline">\(\mathbf{X}_n(\boldsymbol{\eta})\)</span>; covariance reparameterization alters efficiency, not identifiability.</p>
+<p>The broader separation claim follows from the modeling decomposition. The mean parameters enter through <span class="math inline">\(\mu_n(\boldsymbol{\eta},\boldsymbol{\beta})\)</span> while the covariance parameters enter through <span class="math inline">\(\Sigma_n(\boldsymbol{\theta})\)</span>. Under joint identifiability of the mean and covariance families, equality of both induced distributions implies equality of the corresponding parameter values, so the decomposition is well posed. In practice, weak finite-sample confounding can arise when the mean is misspecified or the dependence range is short relative to the sampling interval, but this is a matter of numerical difficulty rather than non-identifiability.</p>
+</section>
+<section id="decorrelated-gls-equivalence-theorem-2" class="level2">
+<h2 class="anchored" data-anchor-id="decorrelated-gls-equivalence-theorem-2">Decorrelated GLS Equivalence (Theorem 2)</h2>
+<p>Take a factorization of the precision matrix <span class="math inline">\(\Sigma^{-1}=\mathbf{A}^\top\mathbf{A}\)</span>. Then <span class="math display">\[
+(\mathbf{Y}-\mathbf{f})^\top\Sigma^{-1}(\mathbf{Y}-\mathbf{f})
+=(\mathbf{Y}-\mathbf{f})^\top\mathbf{A}^\top\mathbf{A}(\mathbf{Y}-\mathbf{f})
+=\|\mathbf{A}\mathbf{Y}-\mathbf{A}\mathbf{f}\|_2^2.
+\]</span> Defining <span class="math inline">\(\mathbf{y}^*=\mathbf{A}\mathbf{Y}\)</span> and <span class="math inline">\(\mathbf{f}^*=\mathbf{A}\mathbf{f}\)</span> gives the OLS-on-whitened-data identity used in the main text. In the ordered-neighbor setting, <span class="math inline">\(\mathbf{A}\)</span> is induced by the sparse factors <span class="math inline">\((\mathbf{I}-\mathbf{B})\)</span> and <span class="math inline">\(\mathbf{F}^{-1/2}\)</span>, so whitening is implemented sequentially. Since the whitening map built from the NNGP approximation converges uniformly to the one induced by the exact precision, the transformed criterion converges uniformly to the full GLS criterion. Optimization after decorrelation is therefore asymptotically equivalent to optimization under the exact covariance-weighted norm.</p>
+</section>
+<section id="finite-sample-caveats" class="level2">
+<h2 class="anchored" data-anchor-id="finite-sample-caveats">Finite-Sample Caveats</h2>
+<p>The preceding results should be interpreted with finite-sample caution. First, uniform approximation of the exact precision by the ordered-neighbor precision is an asymptotic statement; for fixed <span class="math inline">\(m\)</span> there can be non-negligible approximation error when the effective dependence range is long. Second, nonlinear kernel-shape estimation induces a rugged objective surface, so asymptotic identifiability does not by itself guarantee easy optimization. Third, if the mean function is materially misspecified, covariance parameters may absorb signal that belongs to the mean, weakening finite-sample separation. These caveats do not invalidate the framework but explain why careful diagnostics and sensitivity checks remain necessary in practice.</p>
+</section>
+</div></section><section id="appendix-supplementary-diagnostic-figures" class="level1 appendix"><h2 class="anchored quarto-appendix-heading">Appendix: Supplementary Diagnostic Figures</h2><div class="quarto-appendix-contents">
+
+<p>This appendix collects the diagnostic plots referenced from Section 5 that are not included in the main body.</p>
+<div id="fig-qq-swr-sim" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-qq-swr-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../experiments/exp_swr_boxcox/plots/qq_rqr_sim_test.png" class="img-fluid figure-img" style="width:75.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-qq-swr-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: SWR-BC innovation QQ (test, simulation mode; transformed scale). The central quantiles follow the <span class="math inline">\(45^\circ\)</span> reference closely, confirming that Box-Cox transformation produces approximately Gaussian innovations. Mild tail departures are visible beyond <span class="math inline">\(\pm 2.5\)</span> standard deviations.
+</figcaption>
+</figure>
+</div>
+<div id="fig-qq-swr-krig" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-qq-swr-krig-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../experiments/exp_swr_boxcox/plots/qq_rqr_krig_test.png" class="img-fluid figure-img" style="width:75.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-qq-swr-krig-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: SWR-BC innovation QQ (test, kriging mode; transformed scale). Central quantiles align with the reference, but extreme tails diverge substantially — standardized residuals reach <span class="math inline">\(\pm 15\)</span> — reflecting heavy-tailed streamflow events that exceed the Gaussian envelope even after Box-Cox transformation.
+</figcaption>
+</figure>
+</div>
+<div id="fig-pit-swr-gp-krig" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pit-swr-gp-krig-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../experiments/exp_swr_gp_boxcox/plots/pit_hist_krig_test.png" class="img-fluid figure-img" style="width:75.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pit-swr-gp-krig-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: SWR-GP-BC PIT histogram (test, kriging mode; original scale). Peaked shape similar to SWR-BC kriging PIT, with PIT mean <span class="math inline">\(0.45\)</span> and variance <span class="math inline">\(0.029\)</span>. The slight leftward shift relative to SWR-BC reflects the larger mean-function bias in the jointly optimized variant.
+</figcaption>
+</figure>
+</div>
+<div id="fig-qq-swr-gp-krig" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-qq-swr-gp-krig-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../experiments/exp_swr_gp_boxcox/plots/qq_rqr_krig_test.png" class="img-fluid figure-img" style="width:75.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-qq-swr-gp-krig-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: SWR-GP-BC innovation QQ (test, kriging mode; transformed scale). Heavy tail structure comparable to SWR-BC kriging, confirming that both models share the same limitation at extreme flows.
+</figcaption>
+</figure>
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
