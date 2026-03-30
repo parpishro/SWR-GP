@@ -1,0 +1,460 @@
+---
+title: "Neural Networks for Geospatial Data: Paper Summary"
+subtitle: "Based on Zhan & Datta (2024) - STAT 548 Qualifying Course Report"
+author: "Par Pishrobat"
+date: "January 2026"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 1
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+\newpage
+
+# Introduction
+
+## Problem 
+
+Traditional neural network approaches assume independent observations, using an **ordinary least squares (OLS)** loss
+function that is additive over data units. This assumption is violated for geospatial data, where observations exhibit 
+spatial dependence. GPs on the other hand, explicitly model spatial dependence through a covariance matrix but they 
+suffer from computational infeasability for large datasets.
+
+## Current Approaches
+
+Current neural networks for spatial data typically use **added-spatial-features** strategies:
+
+- Adding spatial coordinates $(s_1, s_2)$ as additional covariates
+- Adding spatial basis functions (e.g., splines) as features
+- Using distance-based transformations
+
+## Their Limitations
+
+These approaches incorporate all spatial information into the mean, implicitly assuming independent errors. Consequently, they:
+
+1. Leave the Gaussian Process (GP) model framework
+2. Cannot provide separate estimates of covariate effects $E[Y|\mathbf{X}]$
+3. May suffer from curse of dimensionality due to many basis functions
+4. Cannot explicitly model spatial covariance
+
+## Solution
+
+The paper proposes **NN-GLS** (Neural Networks with Generalized Least Squares), which:
+
+1. Embeds neural networks directly within traditional GP geostatistical models
+2. Uses a **GLS loss** to explicitly account for spatial covariance
+3. Retains all advantages of model-based spatial analysis
+4. Admits a representation as a **Graph Neural Network (GNN)**
+
+
+
+# Geostatistical Modeling: Two Approaches
+
+## Process-Based Geostatistical Modeling
+
+
+Consider spatial data collected at locations $s_i$, $i = 1, \ldots, n$, with:
+
+- Covariate vector $\mathbf{X}_i := \mathbf{X}(s_i) \in \mathbb{R}^d$
+- Response $Y_i := Y(s_i) \in \mathbb{R}$
+
+The **spatial linear model** is:
+
+$$\mathbf{Y} = \mathbf{X}\boldsymbol{\beta} + \boldsymbol{\epsilon}, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma})$$
+
+where $\boldsymbol{\Sigma} := \boldsymbol{\Sigma}(\boldsymbol{\theta})$ is an $n \times n$ covariance matrix.
+
+This model can be viewed as a finite sample realization of a **Gaussian process**:
+$$Y(s) = \mathbf{X}(s)^\top \boldsymbol{\beta} + \epsilon(s)$$
+
+where $\epsilon(s)$ is a zero-mean GP with covariance function:
+$$\Sigma(s_i, s_j) = \text{Cov}(Y(s_i), Y(s_j))$$
+
+
+The spatial error can be decomposed as:
+$$\boldsymbol{\Sigma} = \mathbf{C} + \tau^2 \mathbf{I}$$
+
+where:
+
+- $\mathbf{C}$: covariance matrix of the latent spatial GP
+- $\tau^2$: nugget variance (measurement error/micro-scale variation)
+
+Common covariance functions in geostatistics include:
+
+**Matérn Covariance**
+
+$$C(h) = \sigma^2 \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\sqrt{2\nu} \frac{h}{\phi}\right)^\nu K_\nu\left(\sqrt{2\nu} \frac{h}{\phi}\right)$$
+
+where:
+
+- $\sigma^2$: partial sill (spatial variance)
+- $\phi$: range parameter
+- $\nu$: smoothness parameter
+- $K_\nu$: modified Bessel function of the second kind
+
+**Exponential Covariance (Matérn with $\nu = 1/2$):**
+$$C(h) = \sigma^2 \exp\left(-\frac{h}{\phi}\right)$$
+
+For large $n$, the full GP covariance matrix $\boldsymbol{\Sigma}$ becomes computationally intractable. The **NNGP**
+provides a sparse approximation through a directed acyclic graph (DAG) based on nearest neighbors.
+
+For observation $i$ with nearest neighbor set $N(i)$ of size at most $m$, the NNGP precision matrix is:
+$$\tilde{\boldsymbol{\Sigma}}^{-1} = (\mathbf{I} - \mathbf{B})^\top \mathbf{F}^{-1} (\mathbf{I} - \mathbf{B})$$
+
+where:
+
+- $\mathbf{B}$ is a sparse lower triangular matrix with $\mathbf{B}_{i,N(i)}$ containing kriging weights
+- $\mathbf{F}$ is a diagonal matrix with $F_{ii}$ being the conditional variance
+
+This enables $O(nm^3)$ computation instead of $O(n^3)$.
+
+## Geostatistical Neural Networks
+
+A **fully connected neural network** (MLP) is a composition of affine transformations and nonlinear activations:
+$$f(\mathbf{X}) = \mathbf{W}^{(L)} \sigma(\mathbf{W}^{(L-1)} \sigma(\cdots \sigma(\mathbf{W}^{(1)} \mathbf{X} + \mathbf{b}^{(1)}) \cdots) + \mathbf{b}^{(L-1)}) + \mathbf{b}^{(L)}$$
+
+where:
+
+- $\sigma$: activation function (e.g., ReLU, sigmoid)
+- $\mathbf{W}^{(\ell)}$, $\mathbf{b}^{(\ell)}$: weight matrices and bias vectors for layer $\ell$
+- $L$: number of layers (depth)
+
+For regression, NNs are typically trained by minimizing the **OLS loss**:
+$$\mathcal{L}_{\text{OLS}}(f) = \sum_{i=1}^{n} (Y_i - f(\mathbf{X}_i))^2 = (\mathbf{Y} - \mathbf{f}(\mathbf{X}))^\top (\mathbf{Y} - \mathbf{f}(\mathbf{X}))$$
+
+**Key Issue:** This loss is additive over data units, implicitly assuming independence.
+
+# NN-GLS: Neural Networks with GLS Loss
+
+NN-GLS extends the spatial linear model to allow **non-linear mean functions**:
+$$Y(s) = f(\mathbf{X}(s)) + \epsilon(s), \quad \epsilon(\cdot) \sim \text{GP}(0, \Sigma(\cdot, \cdot))$$
+
+The data likelihood is:
+$$(\mathbf{Y} | \mathbf{X}) \sim \mathcal{N}(\mathbf{f}(\mathbf{X}), \boldsymbol{\Sigma})$$
+
+To account for spatial dependence, NN-GLS uses the **generalized least squares loss**:
+$$\mathcal{L}_{\text{GLS}}(f) = (\mathbf{Y} - \mathbf{f}(\mathbf{X}))^\top \mathbf{Q} (\mathbf{Y} - \mathbf{f}(\mathbf{X}))$$
+
+where $\mathbf{Q}$ is a **working precision matrix**, ideally $\boldsymbol{\Sigma}^{-1}$.
+
+**Key Insight:** Minimizing the GLS loss is equivalent to maximum likelihood estimation of $f$.
+
+For linear models with dependent errors, the Gauss-Markov theorem establishes that GLS is more efficient than OLS. 
+NN-GLS extends this principle to non-linear mean functions.
+
+## Computational Challenges
+
+Using full GP covariance in the GLS loss creates computational issues:
+
+1. **Non-additivity:** Loss cannot be decomposed over data units → no mini-batching
+2. **Dense inverse:** Computing $\boldsymbol{\Sigma}^{-1}$ requires $O(n^2)$ storage and $O(n^3)$ time
+3. **Backpropagation:** Each iteration requires expensive matrix operations
+
+**Solution:** NNGP Precision Matrix
+
+By using the NNGP precision matrix $\mathbf{Q} = \tilde{\boldsymbol{\Sigma}}^{-1}$, we obtain:
+
+1. **Sparsity:** $\mathbf{Q}$ has only $O(nm)$ non-zero entries
+2. **Closed form:** $\mathbf{Q}^{1/2} = \mathbf{F}^{-1/2}(\mathbf{I} - \mathbf{B})$ is available directly
+3. **Graph structure:** Enables GNN-based computation
+
+## NN-GLS as Graph Neural Network
+
+The GLS loss can be viewed as OLS loss on **decorrelated** data:
+$$\mathbf{Y}^* = \mathbf{Q}^{1/2} \mathbf{Y}, \quad \mathbf{f}^*(\mathbf{X}) = \mathbf{Q}^{1/2} \mathbf{f}(\mathbf{X})$$
+
+Then:
+$$\mathcal{L}_{\text{GLS}}(f) = (\mathbf{Y}^* - \mathbf{f}^*(\mathbf{X}))^\top (\mathbf{Y}^* - \mathbf{f}^*(\mathbf{X})) = \mathcal{L}_{\text{OLS}}(\mathbf{Y}^*, \mathbf{f}^*)$$
+
+
+With NNGP, the decorrelation $\mathbf{Q}^{1/2} = \mathbf{F}^{-1/2}(\mathbf{I} - \mathbf{B})$ becomes a 
+**graph convolution** on the nearest neighbor DAG:
+$$Y_i^* = F_{ii}^{-1/2}\left(Y_i - \sum_{j \in N(i)} B_{ij} Y_j\right)$$
+
+This is a **neighborhood aggregation** operation with weights derived from kriging.
+
+The weights for node $i$ in the graph convolution are:
+$$w_{ij} = \begin{cases}
+F_{ii}^{-1/2} & \text{if } j = i \\
+-F_{ii}^{-1/2} B_{ij} & \text{if } j \in N(i) \\
+0 & \text{otherwise}
+\end{cases}$$
+
+NN-GLS can be represented as a GNN with:
+
+1. **Input layer:** Covariates $\mathbf{X}_i$
+2. **Hidden layers:** Standard MLP without spatial structure
+3. **Output layer:** Graph convolution using kriging weights
+
+The final architecture is:
+$$\text{NN-GLS} = \text{GraphConv}_{\mathbf{Q}^{1/2}} \circ \text{MLP}$$
+
+## Training Algorithm:
+
+
+**Input:** Data $(\mathbf{Y}, \mathbf{X}, \mathbf{s})$, neighbor size $m$, NN architecture
+
+1. Initialize NN parameters $\boldsymbol{\gamma}$
+2. Initialize spatial parameters $\boldsymbol{\theta}$ (or estimate from linear spatial model)
+3. Construct nearest neighbor graph and NNGP matrices $\mathbf{B}(\boldsymbol{\theta})$, $\mathbf{F}(\boldsymbol{\theta})$
+4. **While** not converged:
+   - Sample mini-batch $\mathcal{B}$ with extended neighborhood $\mathcal{B}^+$
+   - Compute mean estimates $\mathbf{f}_{\mathcal{B}^+}(\mathbf{X})$ using current NN
+   - Compute decorrelated residuals via graph convolution
+   - Compute GLS loss on batch
+   - Update NN parameters $\boldsymbol{\gamma}$ via backpropagation
+   - **If** spatial parameter update step:
+     - Update $\boldsymbol{\theta}$ using current residuals
+     - Update NNGP matrices $\mathbf{B}(\boldsymbol{\theta})$, $\mathbf{F}(\boldsymbol{\theta})$
+
+**Output:** Trained NN parameters $\boldsymbol{\gamma}$, spatial parameters $\boldsymbol{\theta}$
+
+
+## Algorithmic Advantages:
+
+### Mini-Batching
+
+Because decorrelation only involves local neighborhoods:
+
+- Batch $\mathcal{B}$ can be processed with its extended neighborhood $\mathcal{B}^+ = \mathcal{B} \cup \bigcup_{i \in \mathcal{B}} N(i)$
+- Computational cost per batch: $O(|\mathcal{B}| \cdot m)$
+
+### Backpropagation
+
+Gradients flow efficiently through the sparse graph convolution layer:
+$$\frac{\partial \mathcal{L}_{\text{GLS}}}{\partial \boldsymbol{\gamma}} = 2(\mathbf{Q}^{1/2})^\top (\mathbf{Y}^* - \mathbf{f}^*(\mathbf{X})) \cdot \frac{\partial \mathbf{f}(\mathbf{X})}{\partial \boldsymbol{\gamma}}$$
+
+where $\boldsymbol{\gamma}$ denotes the NN parameters.
+
+### Kriging Predictions
+
+For a new location $s_0$ with covariates $\mathbf{X}_0$, the kriging prediction is:
+$$\hat{Y}(s_0) = \hat{f}(\mathbf{X}_0) + \mathbf{c}_0^\top \boldsymbol{\Sigma}^{-1}(\mathbf{Y} - \hat{\mathbf{f}}(\mathbf{X}))$$
+
+where $\mathbf{c}_0 = (\Sigma(s_0, s_1), \ldots, \Sigma(s_0, s_n))^\top$.
+
+With NNGP, this simplifies to aggregation over a small neighborhood:
+$$\hat{Y}(s_0) = \hat{f}(\mathbf{X}_0) + \sum_{j \in N(s_0)} \tilde{B}_{0j}(Y_j - \hat{f}(\mathbf{X}_j))$$
+
+This is a **graph deconvolution** operation.
+
+## Uncertainty Quantification
+
+Since naïve bootstrap cannot be applied to dependent data, NN-GLS uses a **spatial bootstrap** approach:
+
+
+1. Obtain NN-GLS point estimates $\hat{f}$ and $\hat{\boldsymbol{\theta}}$
+2. Compute NNGP Cholesky factor $\hat{\mathbf{Q}}^{1/2}$
+3. Decorrelate residuals: $\boldsymbol{\omega} = \hat{\mathbf{Q}}^{1/2}(\mathbf{Y} - \hat{\mathbf{f}}(\mathbf{X}))$
+4. Generate $B$ bootstrap samples by resampling entries of $\boldsymbol{\omega}$
+5. Correlate back: $\mathbf{Y}_b^* = \hat{\mathbf{f}}(\mathbf{X}) + \hat{\mathbf{Q}}^{-1/2}\boldsymbol{\omega}_b^*$
+6. Refit NN-GLS on each bootstrap dataset
+7. Construct confidence intervals from bootstrap distribution
+
+
+For spatial predictions, prediction intervals account for both:
+
+1. **Estimation uncertainty** in $\hat{f}(\mathbf{X}_0)$
+2. **Spatial prediction uncertainty** (kriging variance)
+
+The prediction interval at $s_0$ is:
+$$\hat{Y}(s_0) \pm z_{\alpha/2} \sqrt{\hat{\sigma}^2_{\text{krig}}(s_0) + \widehat{\text{Var}}[\hat{f}(\mathbf{X}_0)]}$$
+
+## Theoretical Results
+
+### Assumptions
+
+1. Data Generation: The data are generated from the NN-GLS model with continuous mean function $f_0$ and stationary GP covariance.
+
+2. Function Class: The sieve class of neural networks satisfies:
+$$\mathcal{F}_n = \{f \in \text{NN}(L_n, p_n) : \|f\|_\infty \leq M_n\}$$
+with appropriate growth rates for depth $L_n$, width $p_n$, and bound $M_n$.
+
+3. Precision Matrix: The working precision matrix $\mathbf{Q}$ satisfies:
+$$0 < c_1 \leq \lambda_{\min}(\mathbf{Q}) \leq \lambda_{\max}(\mathbf{Q}) \leq c_2 < \infty$$
+uniformly in $n$.
+The working precision matrix $\mathbf{Q}$ satisfies:
+$$0 < c_1 \leq \lambda_{\min}(\mathbf{Q}) \leq \lambda_{\max}(\mathbf{Q}) \leq c_2 < \infty$$
+uniformly in $n$.
+
+### Main Results
+
+**Theorem 1: Existence of Sieve Estimator**
+Under Assumptions 1-3, there exists a sieve estimator $\hat{f}_n$ that minimizes the GLS loss over $\mathcal{F}_n$.
+
+**Theorem 2: Consistency**
+Under Assumptions 1-3, the NN-GLS estimate is consistent:
+$$\|\hat{f}_n - f_0\|_n \xrightarrow{p} 0$$
+where $\|g\|_n^2 = \frac{1}{n}\sum_{i=1}^n g^2(\mathbf{X}_i)$.
+
+First consistency result for any NN algorithm for irregular spatial data.
+
+**Theorem 3: Finite-Sample Error Rate**
+The finite-sample error rate is:
+$$\|\hat{f}_n - f_0\|_n^2 = O_p\left(\frac{\log n}{n} \cdot \|\mathbf{Q} - \boldsymbol{\Sigma}^{-1}\|_F^2 + \text{approximation error}\right)$$
+
+The error rate increases when the working precision $\mathbf{Q}$ differs from the true precision 
+$\boldsymbol{\Sigma}^{-1}$, quantifying the need to accurately model spatial covariance.
+
+**Proposition 1**
+For Matérn GP with $\nu > 0$ on $[0,1]^d$ with irregular design, Assumptions 1-3 are satisfied.
+
+**Proposition 2**
+Using NNGP precision with sufficiently many neighbors, the approximation error vanishes as $n \to \infty$.
+
+
+# Model Performance:
+
+## Simulation Studies
+
+Data simulated from GP model with:
+
+**Mean functions:**
+
+- $f_1(x) = 10\sin(\pi x)$ (1D sinusoidal)
+- $f_2(\mathbf{X}) = \frac{1}{6}(10\sin(\pi x_1 x_2) + 20(x_3 - 0.5)^2 + 10x_4 + 5x_5)$ (Friedman function)
+
+**Spatial parameters:**
+
+- Exponential covariance with $\sigma^2 = 1$, $\phi = 3/\sqrt{2}$, $\tau^2 = 0.01$
+
+
+| Method | Estimation | Prediction | Spatial Covariance |
+|--------|------------|------------|-------------------|
+| NN-GLS | Yes | Yes (Kriging) | Explicit (GLS) |
+| NN-nonspatial | Yes | Yes | None |
+| NN-latlon | No | Yes | Implicit (coordinates) |
+| NN-splines | No | Yes | Implicit (basis) |
+| RF-GLS | Yes | Yes (Kriging) | Explicit (GLS) |
+| Spatial Linear GP | Yes | Yes (Kriging) | Explicit |
+
+### Key Results
+
+1. **Estimation:** NN-GLS achieves lowest MISE for non-linear functions
+2. **Prediction:** NN-GLS and RF-GLS outperform added-spatial-features methods
+3. **Scalability:** NN-GLS scales to $n = 500,000$ with linear runtime
+4. **Consistency:** Empirical verification of theoretical consistency
+
+## Real Data Application: PM2.5
+
+**Dataset:**
+
+- **Response:** Daily PM2.5 measurements from 719 EPA monitors (June 18, 2022)
+- **Covariates:** 6 meteorological variables (precipitation, temperature, pressure, humidity, U-wind, V-wind)
+- **Study region:** Continental United States
+
+### Results
+
+1. **Prediction Performance:** NN-GLS and RF-GLS achieve lowest RMSE
+2. **Prediction Intervals:** Near-nominal coverage (95% CI)
+3. **Partial Dependence Plots:** Reveal non-linear effects of wind on PM2.5
+
+### Scientific Conclusions
+
+- Temperature has approximately linear effect on PM2.5
+- Wind shows clear non-linear effects
+- Demonstrates need for non-linear spatial models like NN-GLS
+
+# Discussion
+
+## Key Contributions
+
+1. **Methodological:** First principled integration of NN with GP spatial models
+2. **Computational:** GNN representation enables scalable algorithms
+3. **Theoretical:** First consistency results for NN with spatial dependence
+4. **Practical:** Software implementation in `geospaNN` package
+
+## Advantages of NN-GLS
+
+- Parsimonious spatial modeling (2-3 parameters vs. many basis functions)
+- Separation of covariate and spatial effects
+- Valid inference via kriging
+- Scalable to hundreds of thousands of observations
+
+## Limitations and Future Work
+
+1. **Theory-Practice Gap:** Theory uses restricted NN class; practice uses mini-batching/SGD
+2. **Pointwise Inference:** Confidence intervals for $f(x)$ at specific $x$ remain challenging
+3. **High-Dimensional Covariates:** Extension to $d \gg n$ settings
+4. **Non-Gaussian Data:** Extension beyond Gaussian likelihoods
+5. **Spatio-Temporal Data:** Incorporation of temporal dependence
+
+## Connections to Broader Literature
+
+- **Deep GP:** NN-GLS differs from deep GP by keeping NN in mean (not covariance)
+- **GNN for Spatial Data:** NN-GLS provides principled derivation of graph convolution weights
+- **Vecchia Approximations:** NNGP is a special case enabling efficient computation
+
+# Appendix
+
+## Software Implementation
+
+**geospaNN Package**
+
+The `geospaNN` Python package provides:
+
+- Full NN-GLS implementation using PyTorch and PyG
+- NNGP-based spatial covariance modeling
+- Kriging predictions with uncertainty quantification
+- Scales to $n \approx 500,000$
+
+**Installation**
+
+```bash
+# Option 1: Conda (recommended)
+conda env create -f environment.yml
+conda activate geospann
+```
+
+**Basic Usage**
+
+```python
+import torch
+import geospaNN
+
+# Define MLP architecture
+mlp = torch.nn.Sequential(
+    torch.nn.Linear(p, 50),
+    torch.nn.ReLU(),
+    torch.nn.Linear(50, 20),
+    torch.nn.ReLU(),
+    torch.nn.Linear(20, 1)
+)
+
+# Create NN-GLS model
+model = geospaNN.nngls(
+    p=p, 
+    neighbor_size=20, 
+    coord_dimensions=2, 
+    mlp=mlp,
+    theta=torch.tensor([sigma, phi, tau])
+)
+
+# Train
+trainer = geospaNN.nngls_train(model, lr=0.01)
+trainer.train(data_train, data_val, data_test)
+
+# Predict
+predictions = model.predict(data_train, data_test)
+```
+
+
+
+# References
+
+1. Zhan, W., & Datta, A. (2024). Neural networks for geospatial data. *Journal of the American Statistical Association*. arXiv:2304.09157
+
+2. Datta, A., Banerjee, S., Finley, A. O., & Gelfand, A. E. (2016). Hierarchical nearest-neighbor Gaussian process models for large geostatistical datasets. *JASA*, 111(514), 800-812.
+
+3. Goodfellow, I., Bengio, Y., & Courville, A. (2016). *Deep learning*. MIT Press.
+
+4. Chen, W., Li, Y., Reich, B. J., & Sun, Y. (2024). DeepKriging: Spatially dependent deep neural networks for spatial prediction. *Statistica Sinica*.
+
+5. Saha, A., & Datta, A. (2018). BRISC: Bootstrap for rapid inference on spatial covariances. *Stat*, 7(1), e184.
+
+6. Cressie, N., & Wikle, C. K. (2015). *Statistics for spatio-temporal data*. John Wiley & Sons.
