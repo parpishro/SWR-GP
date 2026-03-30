@@ -1,0 +1,11 @@
+2026-03-28 09:09:19,006 | INFO | Experiment: nn_gp__boxcox  lambda=0.20
+2026-03-28 09:09:19,006 | INFO | Config: m=20  max_lag=100  nu=1.5  seed=42  hidden_dim=24  dropout=0.00  weight_decay=0.0010  epochs=400  gls_iters=6
+2026-03-28 09:09:19,698 | INFO | Data: train=10501  test=3652
+2026-03-28 09:09:19,698 | INFO | Held-out split: sub_n=8401  val_n=2100
+2026-03-28 09:09:19,698 | INFO | Fitting selector model on sub-train ...
+2026-03-28 09:09:43,467 | INFO | Selector done in 23.8s | val krig CRPS=0.5075
+2026-03-28 09:09:43,467 | INFO | Fitting final model on full training data ...
+2026-03-28 09:10:08,082 | INFO | Final model fit in 24.6s
+2026-03-28 09:10:09,062 | INFO | Final | SimTest NSE=0.5528 CRPS=0.7977 | KrigTest NSE=0.2574 CRPS=0.5036
+2026-03-28 09:10:09,512 | INFO | Experiment complete | val_CRPS=0.5075 | wall=26.0s
+2026-03-28 09:10:09,512 | INFO | Artifacts in /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_nn_gp_boxcox/output
