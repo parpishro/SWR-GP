@@ -1,0 +1,34 @@
+---
+title: "Gamma Likelihood Latent GP"
+subtitle: "Experiment exp_gamma_likelihood_latent_gp"
+format:
+  pdf:
+    documentclass: article
+    geometry: margin=1in
+    fontsize: 11pt
+---
+
+## Overview
+
+Prototype replacing the Gaussian/Box-Cox observation model with a Gamma likelihood.
+The latent GP mean remains the SWR kernel-convolution structure (K=4, Gaussian kernels, m=20).
+A log-Gaussian SWR-GP baseline is fitted with the same hyperparameters for direct comparison.
+
+**Config:** K=4, m=20, ν=1.5, maxiter=202, n_samples=1000, seed=42.
+
+## Test Performance
+
+| Model | RMSE | NSE | CRPS | Coverage 95% | PI width |
+|---|---|---|---|---|---|
+| SWR-GP log-Gaussian (baseline) | 1.776 | 0.823 | — | — | — |
+| Gamma latent GP | 1.776 | 0.823 | 0.271 | 98.2% | 1.890 |
+
+The Gamma likelihood achieves CRPS = 0.271, below SWR-GP-BC kriging CRPS (0.372), suggesting
+the Gamma observation model captures predictive uncertainty more efficiently on this dataset.
+Coverage at 98.2% is slightly over-dispersed relative to the nominal 95%.
+
+## Notes
+
+CRPS is computed from Monte Carlo posterior samples (empirical CRPS).
+The baseline uses log-Gaussian kriging, not Box-Cox, because the Gamma prototype works
+in log space. A direct Box-Cox comparison would require a separate run.
