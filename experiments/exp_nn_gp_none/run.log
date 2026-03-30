@@ -1,0 +1,11 @@
+2026-03-28 09:08:26,687 | INFO | Experiment: nn_gp__none
+2026-03-28 09:08:26,687 | INFO | Config: m=20  max_lag=100  nu=1.5  seed=42  hidden_dim=24  dropout=0.00  weight_decay=0.0010  epochs=400  gls_iters=6
+2026-03-28 09:08:27,441 | INFO | Data: train=10501  test=3652
+2026-03-28 09:08:27,441 | INFO | Held-out split: sub_n=8401  val_n=2100
+2026-03-28 09:08:27,441 | INFO | Fitting selector model on sub-train ...
+2026-03-28 09:08:47,285 | INFO | Selector done in 19.8s | val krig CRPS=0.8929
+2026-03-28 09:08:47,285 | INFO | Fitting final model on full training data ...
+2026-03-28 09:09:10,742 | INFO | Final model fit in 23.5s
+2026-03-28 09:09:10,987 | INFO | Final | SimTest NSE=0.5749 CRPS=1.0637 | KrigTest NSE=0.7484 CRPS=0.5328
+2026-03-28 09:09:11,500 | INFO | Experiment complete | val_CRPS=0.8929 | wall=24.2s
+2026-03-28 09:09:11,500 | INFO | Artifacts in /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_nn_gp_none/output
