@@ -1,0 +1,13 @@
+2026-03-28 12:24:42,991 | INFO | Experiment: swr_gp__boxcox  lambda=0.20
+2026-03-28 12:24:42,991 | INFO | Config: K=[1, 2, 3, 4]  m=20  max_lag=100  nu=1.5  seed=42  maxiter=200
+2026-03-28 12:24:43,013 | INFO | Data: train=10501  test=3652  shift=0.0000
+2026-03-28 12:24:43,014 | INFO | Fitting K=1 ...
+2026-03-28 12:26:10,626 | INFO | K=1 | BIC(GLS)=-2228.92 | SimTest NSE=0.1921 CRPS=1.2037 | KrigTest NSE=0.8841 CRPS=0.2610 | 87.6s
+2026-03-28 12:26:10,626 | INFO | Fitting K=2 ...
+2026-03-28 12:27:39,864 | INFO | K=2 | BIC(GLS)=-3892.77 | SimTest NSE=0.4360 CRPS=1.0387 | KrigTest NSE=0.8981 CRPS=0.2430 | 89.2s
+2026-03-28 12:27:39,865 | INFO | Fitting K=3 ...
+2026-03-28 12:29:11,000 | INFO | K=3 | BIC(GLS)=-4041.60 | SimTest NSE=0.6233 CRPS=0.8906 | KrigTest NSE=0.8986 CRPS=0.2417 | 91.1s
+2026-03-28 12:29:11,001 | INFO | Fitting K=4 ...
+2026-03-28 12:30:50,361 | INFO | K=4 | BIC(GLS)=-4036.55 | SimTest NSE=0.6564 CRPS=0.8679 | KrigTest NSE=0.9001 CRPS=0.2393 | 99.4s
+2026-03-28 12:30:50,621 | INFO | Experiment complete | best_K=3 | BIC=-4041.60 | wall=367.6s
+2026-03-28 12:30:50,621 | INFO | Artifacts in /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_swr_gp_boxcox/output
