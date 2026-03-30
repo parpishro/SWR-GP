@@ -1,0 +1,54 @@
+---
+title: "SWR — Box-Cox Transform"
+subtitle: "Experiment exp_swr_boxcox"
+format:
+  pdf:
+    documentclass: article
+    geometry: margin=1in
+    fontsize: 11pt
+---
+
+## Overview
+
+SWR model with Box-Cox (λ=0.2) response transform on Big Sur daily streamflow.
+Number of kernels K swept over K\in{{1,2,3,4}}, K selected by BIC\_eff on training data.
+
+**Config:** m=20, ν=1.5, maxiter=202, seed=42, Gaussian kernel fixed, train: hydr\_year < 30, test: hydr\_year ≥ 30.
+
+## Per-K Training Selection
+
+| K | BIC\_eff | AIC\_eff | Train NSE | Train RMSE |
+|---|---|---|---|---|
+| 1 | 7650.4 | 8912.5 | 0.4657 | 3.5095 |
+| 2 | 7401.9 | 8990.1 | 0.4321 | 3.6181 |
+| 3 | 2369.3 | 5248.4 | 0.6727 | 2.7470 |
+| 4 \* | -2082.7 | 1906.2 | 0.6987 | 2.6353 |
+
+(\* = selected model.)
+
+## Test Performance (Best K=4)
+
+Best model parameters: θ = (0.3660, 19.8308, 1.5000, 0.0407)
+
+| Mode | CRPS | NSE | RMSE | MAE |
+|---|---|---|---|---|
+| sim | 0.5260 | 0.7681 | 2.0333 | 0.7684 |
+| krig | 0.3092 | 0.8925 | 1.3845 | 0.2723 |
+
+## Kernel Shapes (Best Model)
+
+![Fitted kernel shapes](plots/kernel_shapes.png){width=60%}
+
+## Calibration
+
+![PIT histogram — simulation](plots/pit_hist_sim_test.png){width=45%}
+![PIT histogram — kriging](plots/pit_hist_krig_test.png){width=45%}
+
+![QQ plot (RQR) — simulation](plots/qq_rqr_sim_test.png){width=45%}
+![QQ plot (RQR) — kriging](plots/qq_rqr_krig_test.png){width=45%}
+
+## Time Series (Best Model)
+
+![Test period time series — kriging](plots/timeseries_krig_test.png){width=90%}
+
+![Test period time series (zoom) — kriging](plots/timeseries_zoom_krig_test.png){width=90%}
