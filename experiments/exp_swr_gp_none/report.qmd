@@ -1,0 +1,44 @@
+---
+title: "SWR-GP — Identity Transform"
+subtitle: "Experiment exp_swr_gp_none"
+format:
+  pdf:
+    documentclass: article
+    geometry: margin=1in
+    fontsize: 11pt
+---
+
+## Overview
+
+SWR-GP model with Identity response transform on Big Sur daily streamflow.
+Number of kernels K swept over K\in{{1,2,3,4}}, K selected by BIC\_eff on training data.
+
+**Config:** m=20, ν=1.5, maxiter=202, seed=42, Gaussian kernel fixed, train: hydr\_year < 30, test: hydr\_year ≥ 30.
+
+## Per-K Training Selection
+
+| K | BIC\_eff | AIC\_eff | Train NSE | Train RMSE |
+|---|---|---|---|---|
+| 1 | 40523.2 | 41090.1 | 0.2722 | 4.0961 |
+| 2 | 39336.8 | 39902.1 | 0.6259 | 2.9368 |
+| 3 | 39144.1 | 39738.0 | 0.6633 | 2.7862 |
+| 4 \* | 39137.9 | 39867.2 | 0.6645 | 2.7809 |
+
+(\* = selected model.)
+
+## Test Performance (Best K=4)
+
+Best model parameters: θ = (6.5145, 3.2960, 1.5000, 0.7081)
+
+| Mode | CRPS | NSE | RMSE | MAE |
+|---|---|---|---|---|
+| sim | 1.1879 | 0.6170 | 2.6132 | 1.2653 |
+| krig | 0.7987 | 0.8783 | 1.4729 | 0.4494 |
+
+## Calibration
+
+![PIT histogram — simulation](plots/pit_hist_sim_test.png){width=45%}
+![PIT histogram — kriging](plots/pit_hist_krig_test.png){width=45%}
+
+![QQ plot (RQR) — simulation](plots/qq_rqr_sim_test.png){width=45%}
+![QQ plot (RQR) — kriging](plots/qq_rqr_krig_test.png){width=45%}

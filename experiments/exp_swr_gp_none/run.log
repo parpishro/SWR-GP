@@ -1,0 +1,13 @@
+2026-03-28 12:24:42,991 | INFO | Experiment: swr_gp__none
+2026-03-28 12:24:42,991 | INFO | Config: K=[1, 2, 3, 4]  m=20  max_lag=100  nu=1.5  seed=42  maxiter=200
+2026-03-28 12:24:43,013 | INFO | Data: train=10501  test=3652
+2026-03-28 12:24:43,014 | INFO | Fitting K=1 ...
+2026-03-28 12:26:09,936 | INFO | K=1 | BIC(GLS)=40529.24 | SimTest NSE=0.2634 CRPS=1.5818 | KrigTest NSE=0.8658 CRPS=0.6115 | 86.9s
+2026-03-28 12:26:09,937 | INFO | Fitting K=2 ...
+2026-03-28 12:27:38,538 | INFO | K=2 | BIC(GLS)=39326.96 | SimTest NSE=0.5708 CRPS=1.2665 | KrigTest NSE=0.8754 CRPS=0.5918 | 88.6s
+2026-03-28 12:27:38,540 | INFO | Fitting K=3 ...
+2026-03-28 12:29:09,219 | INFO | K=3 | BIC(GLS)=39167.13 | SimTest NSE=0.6173 CRPS=1.1883 | KrigTest NSE=0.8778 CRPS=0.5823 | 90.7s
+2026-03-28 12:29:09,220 | INFO | Fitting K=4 ...
+2026-03-28 12:30:48,005 | INFO | K=4 | BIC(GLS)=39182.26 | SimTest NSE=0.6178 CRPS=1.1844 | KrigTest NSE=0.8784 CRPS=0.5811 | 98.8s
+2026-03-28 12:30:48,285 | INFO | Experiment complete | best_K=3 | BIC=39167.13 | wall=365.3s
+2026-03-28 12:30:48,285 | INFO | Artifacts in /Users/workspace/Desktop/Par/Projects/SWR-GP/experiments/exp_swr_gp_none/output
